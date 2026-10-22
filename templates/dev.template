@@ -1,0 +1,3 @@
+import { startPreviewServer } from './.napplet/server.js';
+
+startPreviewServer(new URL('./', import.meta.url));

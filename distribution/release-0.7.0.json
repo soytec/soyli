@@ -1,0 +1,65 @@
+{
+  "version": "0.7.0",
+  "bun": "1.3.11",
+  "playwright": "1.63.0",
+  "upstream": {
+    "boilerplate": "cbbebe9bd56271277b054535c0a8d720a588f61d",
+    "skills": "976ad0549c38f93d4ed418d3ea59a615a7e5fd7f"
+  },
+  "toolchain": {
+    "node": "24.21.0",
+    "pnpm": "10.8.0"
+  },
+  "product": "napplet soyLI",
+  "command": "soyli",
+  "compatibilityCommand": "napplet-space",
+  "sourceCommit": "4cbde3e400836d3c5d68a4761572eed1190d9656",
+  "status": "published",
+  "verifiedAt": "2026-09-15",
+  "verification": [
+    "217 repository tests, typecheck and production web build",
+    "Real silent WebM capture and a decoded frame proving the timed click was recorded",
+    "Interrupted publication resumes the identical video bytes and NIP-92 descriptor; frozen metadata and byte tampering are rejected",
+    "Configured local CAS and signed descriptor/cache/range rejection tests",
+    "Listing review, gallery reduced motion/offscreen lifecycle, static OG and immersive sharing browser checks",
+    "7 native distribution, terminal and preview tests on darwin-arm64 across focused runs, including record/check without Bun or Node on PATH"
+  ],
+  "executionCoverage": [
+    "darwin-arm64"
+  ],
+  "buildOnlyTargets": [
+    "darwin-x64",
+    "linux-arm64",
+    "linux-x64"
+  ],
+  "deployment": "active",
+  "artifacts": {
+    "darwin-arm64": {
+      "filename": "soyli-darwin-arm64.tar.gz",
+      "bytes": 26623625,
+      "sha256": "bc6404498c9f2b7c063f5249e261c8b30a8d6431de1de92c8152920d7a5c155f"
+    },
+    "darwin-x64": {
+      "filename": "soyli-darwin-x64.tar.gz",
+      "bytes": 28936474,
+      "sha256": "bf421e7b81795e481d5f87c3b0a3d9467dba7812c82733d6b06643a3e4f0b248"
+    },
+    "linux-arm64": {
+      "filename": "soyli-linux-arm64.tar.gz",
+      "bytes": 42220811,
+      "sha256": "c29187cefb73b7c54f6d63284a348bec10a8218563439b3486d77fdda886c092"
+    },
+    "linux-x64": {
+      "filename": "soyli-linux-x64.tar.gz",
+      "bytes": 42240669,
+      "sha256": "be6e9061057541df324323c6d49eb03d6239a6d8da3637ad2743f2297ad78f28"
+    }
+  },
+  "websiteRelease": "20260915084016730-23084",
+  "publishedAt": "2026-09-15T08:24:42.687Z",
+  "deploymentVerification": [
+    "All four remote archive hashes verified before installer activation",
+    "Public download sizes and checksum files verified",
+    "Production installer selects soyLI 0.7.0"
+  ]
+}

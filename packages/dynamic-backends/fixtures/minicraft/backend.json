@@ -1,0 +1,9 @@
+{
+  "format": "soy.backend/1",
+  "name": "worlds",
+  "buildProfile": "soy-ts-quickjs-v1",
+  "entry": "backend/handler.ts",
+  "schemas": "backend/schemas.json",
+  "stateVersion": 1,
+  "abi": "soy-handler-v1"
+}

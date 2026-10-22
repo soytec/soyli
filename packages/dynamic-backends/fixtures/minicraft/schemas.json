@@ -1,0 +1,445 @@
+{
+  "version": 1,
+  "records": {
+    "worlds": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "maxLength": 80
+        },
+        "seed": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "mode": {
+          "type": "string",
+          "maxLength": 128,
+          "enum": ["creative", "survival"]
+        },
+        "owner": {
+          "type": "string",
+          "maxLength": 70
+        },
+        "release": {
+          "type": "string",
+          "maxLength": 64
+        }
+      },
+      "required": ["name", "seed", "mode", "owner", "release"],
+      "additionalProperties": false
+    },
+    "chunks": {
+      "type": "object",
+      "properties": {
+        "position": {
+          "type": "object",
+          "properties": {
+            "x": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 127
+            },
+            "y": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 127
+            },
+            "z": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 127
+            }
+          },
+          "required": ["x", "y", "z"],
+          "additionalProperties": false
+        },
+        "revision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "blocks": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 7
+          },
+          "maxItems": 512,
+          "minItems": 512
+        }
+      },
+      "required": ["position", "revision", "blocks"],
+      "additionalProperties": false
+    },
+    "inventories": {
+      "type": "object",
+      "properties": {
+        "revision": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2147483647
+        },
+        "blocks": {
+          "type": "array",
+          "items": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1000000
+          },
+          "maxItems": 7,
+          "minItems": 7
+        }
+      },
+      "required": ["revision", "blocks"],
+      "additionalProperties": false
+    }
+  },
+  "operations": {
+    "createWorld": {
+      "effect": "create",
+      "access": "owner",
+      "account": true,
+      "input": {
+        "type": "object",
+        "properties": {
+          "terrain": { "type": "string", "maxLength": 16, "enum": ["empty", "island"] },
+          "name": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "seed": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "mode": {
+            "type": "string",
+            "maxLength": 128,
+            "enum": ["creative", "survival"]
+          },
+          "visibility": {
+            "type": "string",
+            "maxLength": 128,
+            "enum": ["public", "members"]
+          },
+          "building": {
+            "type": "string",
+            "maxLength": 128,
+            "enum": ["members", "everyone"]
+          },
+          "guestsMayBuild": {
+            "type": "boolean"
+          }
+        },
+        "required": ["name", "seed", "mode", "visibility", "building", "guestsMayBuild"],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "world": {
+            "type": "string",
+            "maxLength": 32
+          }
+        },
+        "required": ["world"],
+        "additionalProperties": false
+      }
+    },
+    "readWorld": {
+      "effect": "query",
+      "access": "reader",
+      "account": false,
+      "input": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 80
+          },
+          "seed": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "mode": {
+            "type": "string",
+            "maxLength": 128,
+            "enum": ["creative", "survival"]
+          },
+          "owner": {
+            "type": "string",
+            "maxLength": 70
+          },
+          "release": {
+            "type": "string",
+            "maxLength": 64
+          }
+        },
+        "required": ["name", "seed", "mode", "owner", "release"],
+        "additionalProperties": false
+      }
+    },
+    "readChunks": {
+      "effect": "query",
+      "access": "reader",
+      "account": false,
+      "input": {
+        "type": "object",
+        "properties": {
+          "positions": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "x": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 127
+                },
+                "y": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 127
+                },
+                "z": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 127
+                }
+              },
+              "required": ["x", "y", "z"],
+              "additionalProperties": false
+            },
+            "maxItems": 8,
+            "minItems": 1
+          }
+        },
+        "required": ["positions"],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "chunks": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "position": {
+                  "type": "object",
+                  "properties": {
+                    "x": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 127
+                    },
+                    "y": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 127
+                    },
+                    "z": {
+                      "type": "integer",
+                      "minimum": 0,
+                      "maximum": 127
+                    }
+                  },
+                  "required": ["x", "y", "z"],
+                  "additionalProperties": false
+                },
+                "revision": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 2147483647
+                },
+                "blocks": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "maximum": 7
+                  },
+                  "maxItems": 512,
+                  "minItems": 512
+                }
+              },
+              "required": ["position", "revision", "blocks"],
+              "additionalProperties": false
+            },
+            "maxItems": 8,
+            "minItems": 0
+          }
+        },
+        "required": ["chunks"],
+        "additionalProperties": false
+      }
+    },
+    "readMyInventory": {
+      "effect": "query",
+      "access": "reader",
+      "account": true,
+      "input": {
+        "type": "object",
+        "properties": {},
+        "required": [],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "revision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "blocks": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 1000000
+            },
+            "maxItems": 7,
+            "minItems": 7
+          }
+        },
+        "required": ["revision", "blocks"],
+        "additionalProperties": false
+      }
+    },
+    "placeBlock": {
+      "effect": "command",
+      "access": "writer",
+      "account": false,
+      "input": {
+        "type": "object",
+        "properties": {
+          "x": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1023
+          },
+          "y": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1023
+          },
+          "z": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1023
+          },
+          "expectedChunkRevision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          },
+          "block": {
+            "type": "string",
+            "maxLength": 128,
+            "enum": ["stone", "dirt", "grass", "wood", "glass", "sand", "water"]
+          }
+        },
+        "required": ["x", "y", "z", "expectedChunkRevision", "block"],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "chunkRevision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          }
+        },
+        "required": ["chunkRevision"],
+        "additionalProperties": false
+      }
+    },
+    "removeBlock": {
+      "effect": "command",
+      "access": "writer",
+      "account": false,
+      "input": {
+        "type": "object",
+        "properties": {
+          "x": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1023
+          },
+          "y": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1023
+          },
+          "z": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 1023
+          },
+          "expectedChunkRevision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          }
+        },
+        "required": ["x", "y", "z", "expectedChunkRevision"],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "chunkRevision": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 2147483647
+          }
+        },
+        "required": ["chunkRevision"],
+        "additionalProperties": false
+      }
+    },
+    "setMember": {
+      "effect": "command",
+      "access": "owner",
+      "account": true,
+      "input": {
+        "type": "object",
+        "properties": {
+          "principal": {
+            "type": "string",
+            "maxLength": 70
+          },
+          "role": {
+            "type": "string",
+            "maxLength": 128,
+            "enum": ["builder", "viewer", "remove"]
+          }
+        },
+        "required": ["principal", "role"],
+        "additionalProperties": false
+      },
+      "output": {
+        "type": "object",
+        "properties": {
+          "changed": {
+            "type": "boolean"
+          }
+        },
+        "required": ["changed"],
+        "additionalProperties": false
+      }
+    }
+  }
+}

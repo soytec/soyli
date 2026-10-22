@@ -1,0 +1,230 @@
+<!doctype html>
+<html lang="en">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Controller bench</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      padding: 24px;
+      background: #f8f6ed;
+      color: #292d23;
+      font: 14px/1.5 system-ui;
+    }
+    h1 {
+      margin: 0;
+      font-size: 28px;
+      letter-spacing: -1px;
+    }
+    h2 {
+      margin: 0 0 10px;
+      font-size: 18px;
+      overflow-wrap: anywhere;
+    }
+    .eyebrow,
+    output,
+    .readings,
+    .action,
+    label small {
+      font-family: ui-monospace, monospace;
+    }
+    .eyebrow {
+      color: #58714e;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      font-size: 11px;
+    }
+    .muted {
+      color: #5d6556;
+    }
+    p {
+      margin: 8px 0 16px;
+    }
+    button,
+    select,
+    input {
+      font: inherit;
+      color: inherit;
+      border: 1px solid #bcc2ac;
+      border-radius: 6px;
+      padding: 7px 10px;
+      background: #fffdf5;
+      max-width: 100%;
+    }
+    button {
+      cursor: pointer;
+    }
+    button,
+    select,
+    input[type='number'] {
+      min-height: 44px;
+    }
+    button:focus-visible,
+    select:focus-visible,
+    input:focus-visible,
+    summary:focus-visible {
+      outline: 2px solid #397c65;
+      outline-offset: 3px;
+    }
+    #state {
+      color: #36593c;
+      background: #e7ecd9;
+      padding: 12px 16px;
+      border-radius: 8px;
+    }
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 20px;
+    }
+    .card {
+      padding: 20px;
+      background: #efeedf;
+      border: 1px solid #d9dbc9;
+      border-radius: 12px;
+      min-width: 0;
+      margin-bottom: 16px;
+    }
+    canvas {
+      display: block;
+      width: 100%;
+      height: auto;
+      border-radius: 8px;
+      background: #293124;
+      margin: 14px 0;
+    }
+    .readings {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 12px;
+    }
+    .reading {
+      display: grid;
+      gap: 4px;
+      width: 90px;
+    }
+    meter {
+      width: 100%;
+      accent-color: #397c65;
+    }
+    .buttons {
+      margin: 12px 0;
+    }
+    .pad-button {
+      padding: 5px 8px;
+      border-radius: 5px;
+      background: #f8f6ed;
+      border: 1px solid #bcc2ac;
+    }
+    .pad-button[data-down='true'] {
+      background: #36593c;
+      color: #fffdf5;
+    }
+    .action {
+      white-space: pre-wrap;
+      font-size: 12px;
+    }
+    details {
+      margin-top: 18px;
+    }
+    summary {
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .mapping-row {
+      display: grid;
+      grid-template-columns: 75px 1fr 65px 1fr;
+      align-items: center;
+      gap: 8px;
+      margin: 10px 0;
+    }
+    #mapping-result {
+      min-height: 1.5em;
+    }
+    [hidden] {
+      display: none !important;
+    }
+    @media (max-width: 700px) {
+      body {
+        padding: 16px;
+      }
+      .layout {
+        grid-template-columns: 1fr;
+      }
+      .mapping-row {
+        grid-template-columns: 60px 1fr 55px 1fr;
+        gap: 4px;
+      }
+      .mapping-row input,
+      .mapping-row select {
+        padding: 5px;
+      }
+    }
+  </style>
+  <p class="eyebrow">soyLI / input lab</p>
+  <h1>Controller bench.</h1>
+  <p class="muted">
+    Pair your controller in your device settings, click inside this panel, then press a controller
+    button.
+  </p>
+  <p id="state" role="status">Waiting for controller input…</p>
+  <div class="layout">
+    <section class="card">
+      <h2>Give it a spin.</h2>
+      <label
+        >Test controller
+        <select id="player" aria-label="Test controller">
+          <option value="">Waiting for a controller</option>
+        </select></label
+      >
+      <canvas
+        width="560"
+        height="220"
+        aria-label="Move the dot with the left stick or D-pad. Jump or fire to change its appearance."
+      ></canvas>
+      <p class="muted">
+        Left stick or D-pad moves the dot. Bottom face button jumps; right trigger fires. Start
+        pauses. Click here again after switching windows.
+      </p>
+      <label
+        >Stick dead zone
+        <input id="dead-zone" type="range" min="0" max="0.8" step="0.01" value="0.18" /><output
+          id="dead-value"
+          >0.18</output
+        ></label
+      >
+      <details id="mapping">
+        <summary>Map buttons & axes</summary>
+        <p class="muted">
+          Use the raw indices on the right. Nonstandard controllers need a mapping. Changes apply
+          only to this test session.
+        </p>
+        <div role="group" aria-label="Test action mappings">
+          <div id="mapping-fields"></div>
+          <button type="button" id="apply-mapping">Apply test mapping</button>
+        </div>
+        <p id="mapping-result" role="status"></p>
+        <p class="muted">
+          For your game: edit the bindings passed to createGamepadInput or call remap. See
+          docs/napplet-controllers.md.
+        </p>
+      </details>
+    </section>
+    <section aria-label="Connected controllers">
+      <div id="pads"></div>
+      <p id="empty" class="muted">
+        No controller exposed by this browser yet. A USB cable may be charge-only. Try a data cable
+        or Bluetooth pairing, then press a button.
+      </p>
+    </section>
+  </div>
+  <p class="muted">
+    This tester runs inside the napplet sandbox. Readings stay in this browser. Passing this check
+    confirms input access, not that your game has mapped its controls. Keyboard and touch controls
+    belong in your game too.
+  </p>
+</html>

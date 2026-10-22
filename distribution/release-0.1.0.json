@@ -1,0 +1,23 @@
+{
+  "version": "0.1.0",
+  "bun": "1.3.11",
+  "playwright": "1.63.0",
+  "artifacts": {
+    "darwin-arm64": {
+      "bytes": 26262941,
+      "sha256": "8bd0f5a0584ca1b0484286e61e51a5d1d25b3f0c0d89c4efb858d7b67b701249"
+    },
+    "darwin-x64": {
+      "bytes": 28581198,
+      "sha256": "44d90af61532e2c81df045ed7d672cb0cd2924cc0e2ab79417b7d9bd6039485a"
+    },
+    "linux-arm64": {
+      "bytes": 41864634,
+      "sha256": "d2e45264ebcdc3f22abd07399617e598327edc01b6bf1c31ee28c585d84d2e41"
+    },
+    "linux-x64": {
+      "bytes": 41882628,
+      "sha256": "32e15afbd87696dab3d68fff40e33ca5e51fd3d63de874ff299033441821db91"
+    }
+  }
+}

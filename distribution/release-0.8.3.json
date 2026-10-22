@@ -1,0 +1,76 @@
+{
+  "bun": "1.3.11",
+  "playwright": "1.63.0",
+  "upstream": {
+    "boilerplate": "cbbebe9bd56271277b054535c0a8d720a588f61d",
+    "skills": "976ad0549c38f93d4ed418d3ea59a615a7e5fd7f"
+  },
+  "toolchain": {
+    "node": "24.21.0",
+    "pnpm": "10.8.0"
+  },
+  "product": "napplet soyLI",
+  "command": "soyli",
+  "compatibilityCommand": "napplet-space",
+  "executionCoverage": [
+    "darwin-arm64"
+  ],
+  "buildOnlyTargets": [
+    "darwin-x64",
+    "linux-arm64",
+    "linux-x64"
+  ],
+  "version": "0.8.3",
+  "sourceCommit": "0589a763fd27b4f0eb7d2cb5eda9ba22ec688834",
+  "status": "published",
+  "verifiedAt": "2026-09-15",
+  "artifacts": {
+    "darwin-arm64": {
+      "filename": "soyli-darwin-arm64.tar.gz",
+      "bytes": 26643135,
+      "sha256": "f71c252bed4c2890338108a81f5fb647a7a7261eff923dd9da59073b5feb82ec"
+    },
+    "darwin-x64": {
+      "filename": "soyli-darwin-x64.tar.gz",
+      "bytes": 28954548,
+      "sha256": "f7fb560bfddb5be277b2806c1772f246797c55585684ef274094adc386cb38ac"
+    },
+    "linux-arm64": {
+      "filename": "soyli-linux-arm64.tar.gz",
+      "bytes": 42239656,
+      "sha256": "e77acb926094b7b777b3fde9363487ead254b116a737ae4a9f034edb8268c439"
+    },
+    "linux-x64": {
+      "filename": "soyli-linux-x64.tar.gz",
+      "bytes": 42253956,
+      "sha256": "575dee5ec6d9d456d3fa4088d9652fe60fa4a858513716f39554b5d55d2e8b9d"
+    }
+  },
+  "verification": [
+    "Typecheck passes; 17 focused tests with 91 assertions cover shared transport, NIP-65, hints, and deadlines",
+    "Real pinned SDK/shared preview reproduces outbox.query timed out before the fix; five scenarios pass after it, including stalled discovery, stalled fallback, empty reads and getEvent",
+    "Read regression preserves multiple events arriving at different times and cancels outstanding work before the caller deadline",
+    "Exact unchanged published Drone Zone reproduces the original failure when only fallback requests are delayed",
+    "Unchanged Drone Zone build resolves the real station, decodes MP3 and pauses through its own controls in source and packaged CLI preview with all fallback requests stalled",
+    "Packaged darwin-arm64 CLI passes seven distribution, piped-terminal and preview tests, 77 assertions, without Bun/Node on PATH"
+  ],
+  "deployment": "active",
+  "websiteRelease": "20260915163830615-43690",
+  "websiteSourceCommit": "d046596d3d7ede0a4ed1eea2270afb6dfc81b1ea",
+  "deploymentVerifiedAt": "2026-09-15T16:43:51.798527+00:00",
+  "publicationVerification": [
+    "Four immutable archives uploaded with verified chunks and checked before installer activation",
+    "Public installer freshly downloads and verifies soyLI 0.8.3 in isolated macOS arm64 directories without Bun/Node on PATH; existing installation and identities untouched",
+    "All four public archive sizes and checksum files match this record"
+  ],
+  "deploymentVerification": [
+    "Initial candidate passed 245 repository tests, Go race checks, 4 relay, 18 Blossom and 8 GRASP tests locally and on the VPS, then rolled back at indexer readiness",
+    "Readiness regression proved a live worker was rejected while its first scan was pending; a separate expiring heartbeat fixes this without replacing scan status/errors",
+    "Retry uses a fresh copy of the tested candidate service builds plus committed readiness files; 246 repository tests and web build rerun on the VPS, with original preflight, HTTPS Origin probes, Caddy validation, activation checks and rollback retained",
+    "Exact published Drone Zone /play route passes four sequential tests: desktop normal, desktop stalled fallbacks, touch/mobile normal, touch/mobile stalled fallbacks. Each resolves the real station, decodes MP3 and pauses through its own controls; only fallback requests are delayed in stress cases, no station response overrides or napplet changes",
+    "All five PM2 processes online with zero restarts; both Caddy hashes unchanged; owned catalog/relay/Blossom/Git endpoints pass and schlaustronics.com returns HTTPS 200"
+  ],
+  "knownOperationalWarnings": [
+    "Fresh candidate index scan reports external relay.damus.io discovery timeouts; these remain visible separately from worker liveness and do not block station playback."
+  ]
+}

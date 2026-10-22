@@ -1,0 +1,64 @@
+{
+  "version": "0.8.0",
+  "bun": "1.3.11",
+  "playwright": "1.63.0",
+  "upstream": {
+    "boilerplate": "cbbebe9bd56271277b054535c0a8d720a588f61d",
+    "skills": "976ad0549c38f93d4ed418d3ea59a615a7e5fd7f"
+  },
+  "toolchain": {
+    "node": "24.21.0",
+    "pnpm": "10.8.0"
+  },
+  "product": "napplet soyLI",
+  "command": "soyli",
+  "compatibilityCommand": "napplet-space",
+  "sourceCommit": "bb125680bf13d87a697587fd7f35a5f290e3093c",
+  "status": "published",
+  "verifiedAt": "2026-09-15",
+  "verification": [
+    "234 repository tests, typecheck and production web build",
+    "Three media and publication service tests: actual upstream shim, decoded WAV, gesture retry, mobile layout, identity cleanup and source admission",
+    "Five existing runtime browser regressions: sandbox, file prompts, configuration and identity transitions",
+    "Real HTTPS live MP3 streamed through the built website, with fullscreen controls, pause and teardown",
+    "Unchanged Drone Zone build played beyond five seconds and paused in compiled soyLI without Bun or Node on PATH",
+    "Successive MP3 chunks and cancellation through Bun native fetch and the real Node fallback worker",
+    "Seven native distribution, installer terminal and preview tests on darwin-arm64"
+  ],
+  "executionCoverage": [
+    "darwin-arm64"
+  ],
+  "buildOnlyTargets": [
+    "darwin-x64",
+    "linux-arm64",
+    "linux-x64"
+  ],
+  "deployment": "operator deployment observed",
+  "artifacts": {
+    "darwin-arm64": {
+      "filename": "soyli-darwin-arm64.tar.gz",
+      "bytes": 26632737,
+      "sha256": "fd03b55d5e39836f03a5375a018cb024049c01a0caca174db9045bfa7bd1e278"
+    },
+    "darwin-x64": {
+      "filename": "soyli-darwin-x64.tar.gz",
+      "bytes": 28942104,
+      "sha256": "e7ed518d0aadb51aa6b349c5ec001ab5b60f4511f87102b4e48a11673f2df0e8"
+    },
+    "linux-arm64": {
+      "filename": "soyli-linux-arm64.tar.gz",
+      "bytes": 42226361,
+      "sha256": "a39aa81118a1c38e0a8276de91ce0c45a1cc5b65776248d387615daac6ddc1e7"
+    },
+    "linux-x64": {
+      "filename": "soyli-linux-x64.tar.gz",
+      "bytes": 42246183,
+      "sha256": "98717ac5798596115a50d65fb79804c3cbba166376ea54fd069d4fc385d1e25e"
+    }
+  },
+  "websiteRelease": "20260915113546965-84858",
+  "deploymentVerification": [
+    "2026-09-15: public installer selects 0.8.0; all four public checksum files match this prepared release record",
+    "2026-09-15: public health reports release 20260915113546965-84858; no VPS inspection or production playback check performed in this observation"
+  ]
+}

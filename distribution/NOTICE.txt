@@ -1,0 +1,22 @@
+napplet soyLI — https://napplet.soy/cli
+
+This executable embeds Bun 1.3.11, so no separate Bun or Node installation is
+needed. Bun is copyright Jarred Sumner and contributors; its license is in
+licenses/BUN-LICENSE.txt. Bun incorporates JavaScriptCore and other components;
+see https://github.com/oven-sh/bun/tree/bun-v1.3.11 for their source and notices.
+
+Playwright 1.63.0 is distributed in lib/playwright-core, including its LICENSE,
+NOTICE and ThirdPartyNotices.txt. Chromium is downloaded separately on request
+or on the first publication check and is subject to its own license terms.
+macOS archives also include Playwright 1.61.1 in lib/playwright-core-mac-compat
+for macOS 12–13, with its own LICENSE, NOTICE and ThirdPartyNotices.txt.
+
+The executable also bundles JavaScript dependencies. Their license and notice
+files are included in licenses. This directory may include notices for platform
+build dependencies that are not bundled in the executable.
+
+This executable embeds snapshots of napplet/boilerplate and napplet/napplet's
+skills, copyright their respective contributors, under MIT. Their licenses are
+in licenses/napplet-boilerplate-MIT.txt and licenses/napplet-skills-MIT.txt; exact
+revisions are recorded in release.json. Node and pnpm are downloaded separately
+from their official releases and retain the licenses included in their archives.

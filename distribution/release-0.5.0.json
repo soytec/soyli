@@ -1,0 +1,35 @@
+{
+  "version": "0.5.0",
+  "bun": "1.3.11",
+  "playwright": "1.63.0",
+  "upstream": {
+    "boilerplate": "cbbebe9bd56271277b054535c0a8d720a588f61d",
+    "skills": "976ad0549c38f93d4ed418d3ea59a615a7e5fd7f"
+  },
+  "toolchain": {
+    "node": "24.21.0",
+    "pnpm": "10.8.0"
+  },
+  "sourceCommit": "eae37bc50d5cffe8caafb866354b302f696d73d8",
+  "status": "published",
+  "artifacts": {
+    "darwin-arm64": {
+      "bytes": 26570283,
+      "sha256": "ad2f41abad4fec93b778f9d6dc3039db4910cfcf2d9ced34b8be42896b54290b"
+    },
+    "darwin-x64": {
+      "bytes": 28884344,
+      "sha256": "b782959eeead946d27a8d5292455c4bdb8ac87682f0374b7f0029e2ac4ebecea"
+    },
+    "linux-arm64": {
+      "bytes": 42169547,
+      "sha256": "ef09b011341c768a2c0b0c6696198f71d4451b1714c6b98dc473eee920b0fb6f"
+    },
+    "linux-x64": {
+      "bytes": 42184403,
+      "sha256": "dee020615d79ef185b57fa376aaa1b30bec9601a5d2b0fa64df5d277ddc4d3cf"
+    }
+  },
+  "publishedAt": "2026-09-14T14:27:15.590Z",
+  "websiteRelease": "20260914142718446-76864"
+}

@@ -1,0 +1,63 @@
+{
+  "version": "0.14.0",
+  "bun": "1.3.11",
+  "playwright": "1.63.0",
+  "upstream": {
+    "boilerplate": "cbbebe9bd56271277b054535c0a8d720a588f61d",
+    "skills": "976ad0549c38f93d4ed418d3ea59a615a7e5fd7f"
+  },
+  "toolchain": {
+    "node": "24.21.0",
+    "pnpm": "10.8.0"
+  },
+  "product": "napplet soyLI",
+  "command": "soyli",
+  "compatibilityCommand": "napplet-space",
+  "sourceCommit": "15936ed",
+  "status": "verified-local",
+  "verifiedAt": "2026-09-20",
+  "deployment": "not-deployed",
+  "executionCoverage": ["darwin-arm64"],
+  "buildOnlyTargets": ["darwin-x64", "linux-arm64", "linux-x64"],
+  "artifacts": {
+    "darwin-arm64": {
+      "filename": "soyli-darwin-arm64.tar.gz",
+      "bytes": 26924551,
+      "sha256": "67c578ba611686b477a715c7e37554087d8e889d3b65de78fda0e88c0c3819ed"
+    },
+    "darwin-x64": {
+      "filename": "soyli-darwin-x64.tar.gz",
+      "bytes": 29230784,
+      "sha256": "93b44975c2701a7f3c0ea89689792142c841081a7186ee17abebc3fc0563fd65"
+    },
+    "linux-arm64": {
+      "filename": "soyli-linux-arm64.tar.gz",
+      "bytes": 42514628,
+      "sha256": "dbef9a5be51999e2238990b6645139d1f34cf21b3017fa52e0ee6f0a99cebdda"
+    },
+    "linux-x64": {
+      "filename": "soyli-linux-x64.tar.gz",
+      "bytes": 42529822,
+      "sha256": "b4169c12a5f2fe90a759d60bfe8bea0d147fdbe590db211c5f9bfe7af64680e4"
+    }
+  },
+  "protocolPins": {
+    "nip5d": "24711d9c47bbdd07908bf1d52bf677d9cbc530f0",
+    "napResource": "8c0645d32ceb159bc3e8bcec1107a92862b7e86a",
+    "shim": "0.30.0"
+  },
+  "verification": [
+    "Typecheck and repository check pass: 292 tests, including four new workshop state/diff/identity/concurrency tests.",
+    "Isolated Chromium acceptance passes: project edit, diff, checkpoint, check and exact-cover publication; upload failure and GUI retry after changing current destinations; contributor code/assets proposal, Original/Proposed playback, diff, local merge, separate release; 390px layout without horizontal overflow.",
+    "Existing asset-manager browser test passes. Publisher transport regression passes; the existing collaboration regression passed on rerun after transient browser/freeze failures.",
+    "Four tests against the final compiled darwin-arm64 archive pass (78 assertions): installer verification, capture, local workshop checkpoint, maintained upstream build, fresh Git clone and Vite watcher restart after a GUI edit. No global Bun/Node on the fixture PATH.",
+    "Production web build passes. All four archive sizes and SHA-256 checksums verified locally."
+  ],
+  "remainingVerification": [
+    "Archives have not been uploaded and installer 0.14.0 has not been deployed.",
+    "Native Intel macOS and Linux execution remains unverified.",
+    "Nontechnical human workshop acceptance remains open. Startup checks do not certify gameplay, multiplayer, codecs in every browser or full NAP conformance.",
+    "Use ordinary Git for selective staging, conflict resolution, rebasing and branch management. External editor/Git processes are not locked by the local workshop.",
+    "Operational observation of the intermittent existing collaboration test failures remains useful; final isolated regression and the new workshop flow pass."
+  ]
+}

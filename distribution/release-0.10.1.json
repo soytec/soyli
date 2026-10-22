@@ -1,0 +1,69 @@
+{
+  "version": "0.10.1",
+  "bun": "1.3.11",
+  "playwright": "1.63.0",
+  "upstream": {
+    "boilerplate": "cbbebe9bd56271277b054535c0a8d720a588f61d",
+    "skills": "976ad0549c38f93d4ed418d3ea59a615a7e5fd7f"
+  },
+  "toolchain": {
+    "node": "24.21.0",
+    "pnpm": "10.8.0"
+  },
+  "product": "napplet soyLI",
+  "command": "soyli",
+  "compatibilityCommand": "napplet-space",
+  "sourceCommit": "49bcdf6fe0ba23aa2fc26b279482d60cc18bea2a",
+  "status": "verified-local",
+  "verifiedAt": "2026-09-17",
+  "deployment": "not-deployed",
+  "executionCoverage": [
+    "darwin-arm64"
+  ],
+  "buildOnlyTargets": [
+    "darwin-x64",
+    "linux-arm64",
+    "linux-x64"
+  ],
+  "artifacts": {
+    "darwin-arm64": {
+      "filename": "soyli-darwin-arm64.tar.gz",
+      "bytes": 26872215,
+      "sha256": "94ec31e04bd2facb92e5f4e7609d934a73d2674a7b58984672d4bb4b24b0763b"
+    },
+    "darwin-x64": {
+      "filename": "soyli-darwin-x64.tar.gz",
+      "bytes": 29179465,
+      "sha256": "ab58ee5cbb8e7e21de1ed47e2aa4ac31445ec2e90ceed87f7edbd2ef0484029d"
+    },
+    "linux-arm64": {
+      "filename": "soyli-linux-arm64.tar.gz",
+      "bytes": 42463887,
+      "sha256": "ede8a006c794bd7d662e3ac630e0d77cc7648aa986a1fd481df75ec0e4803c5b"
+    },
+    "linux-x64": {
+      "filename": "soyli-linux-x64.tar.gz",
+      "bytes": 42479904,
+      "sha256": "594aae98cf99f95ade4b59f7b85ebf173d4f2a0343903bbf2bafd72be98a6f38"
+    }
+  },
+  "protocolPins": {
+    "nip5d": "24711d9c47bbdd07908bf1d52bf677d9cbc530f0",
+    "napCvm": "ad68a938236e9230324e377cd005008a315ff402",
+    "napWebrtc": "5fae95dd2c8e59bd06c654e0845656add077dcda",
+    "contextvmSdk": "0.13.16",
+    "shim": "0.30.0"
+  },
+  "verification": [
+    "Typecheck, 262 repository tests (1725 assertions), and production web build pass",
+    "Mobile production-web popup remembers Allow/Block across immersive visits; Network settings can reset the choice",
+    "Real-shim preview checks remembered Allow/Block, dismissal, Escape, timeout, cross-tab session revocation, isolated profiles, sandbox storage isolation, separate provider permissions and unavailable persistent storage",
+    "Two independent Chromium contexts still exchange peer payloads through forced coturn; scoreboards, matchmaking, rate budget, oversize rejection and departure pass",
+    "Two packaged darwin-arm64 creator-preview and backend smoke tests pass (22 assertions), with Bun/Node absent from child PATH",
+    "All four archives built and SHA-256 checked; only darwin-arm64 executed"
+  ],
+  "remainingVerification": [
+    "Upload immutable 0.10.1 archives before activating installer changes; no uploads or VPS changes in this slice",
+    "Public-network and long-running connectivity qualifications from the 0.10.0 release remain separate from this permission change"
+  ]
+}

@@ -1,0 +1,54 @@
+{
+  "name": "soyli",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "bin": {
+    "soyli": "src/index.ts"
+  },
+  "scripts": {
+    "dev": "bun --watch src/index.ts",
+    "soyli": "bun src/index.ts",
+    "start": "bun src/index.ts",
+    "typecheck": "bun check",
+    "test": "bun test src/__tests__",
+    "build": "bun scripts/build.ts",
+    "test:standalone": "bun run build && bun scripts/smoke.ts"
+  },
+  "dependencies": {
+    "@contextvm/sdk": "0.13.16",
+    "@jitl/quickjs-singlefile-cjs-release-sync": "0.31.0",
+    "@modelcontextprotocol/sdk": "1.30.0",
+    "@napplet/shim": "0.31.0",
+    "@noble/hashes": "2.0.1",
+    "@radix-ui/react-dialog": "1.1.23",
+    "@scure/base": "2.4.0",
+    "applesauce-core": "7.0.0",
+    "applesauce-loaders": "7.0.0",
+    "applesauce-relay": "7.0.0",
+    "applesauce-signers": "7.0.0",
+    "entities": "7.0.0",
+    "ipaddr.js": "2.5.0",
+    "lucide-react": "1.45.0",
+    "nostr-tools": "2.25.2",
+    "nostr-wasm": "0.1.0",
+    "playwright-core": "1.63.0",
+    "playwright-core-mac-compat": "npm:playwright-core@1.61.1",
+    "qrcode": "1.5.4",
+    "quickjs-emscripten": "0.31.0",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "rxjs": "7.8.2",
+    "ws": "8.21.3",
+    "zod": "4.6.2"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "@types/bun": "1.4.2",
+    "@types/qrcode": "1.5.6",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@types/ws": "8.18.1",
+    "typescript": "7.0.2"
+  }
+}

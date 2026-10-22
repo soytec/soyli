@@ -1,0 +1,73 @@
+{
+  "bun": "1.3.11",
+  "playwright": "1.63.0",
+  "upstream": {
+    "boilerplate": "cbbebe9bd56271277b054535c0a8d720a588f61d",
+    "skills": "976ad0549c38f93d4ed418d3ea59a615a7e5fd7f"
+  },
+  "toolchain": {
+    "node": "24.21.0",
+    "pnpm": "10.8.0"
+  },
+  "product": "napplet soyLI",
+  "command": "soyli",
+  "compatibilityCommand": "napplet-space",
+  "version": "0.8.2",
+  "sourceCommit": "da2faa0b69cb3c18a29bfbd62f66f3d99b900c94",
+  "status": "published",
+  "verifiedAt": "2026-09-15",
+  "executionCoverage": [
+    "darwin-arm64"
+  ],
+  "buildOnlyTargets": [
+    "darwin-x64",
+    "linux-arm64",
+    "linux-x64"
+  ],
+  "artifacts": {
+    "darwin-arm64": {
+      "filename": "soyli-darwin-arm64.tar.gz",
+      "bytes": 26643034,
+      "sha256": "e044b5ec9f092e0bfc7b55d18699571aaaf21af63ac0b67343f521e58a85d9b7"
+    },
+    "darwin-x64": {
+      "filename": "soyli-darwin-x64.tar.gz",
+      "bytes": 28954403,
+      "sha256": "069bd769fac068f9eae7a4b193219eae72da94b86bd606d80e869e03a80883a2"
+    },
+    "linux-arm64": {
+      "filename": "soyli-linux-arm64.tar.gz",
+      "bytes": 42239466,
+      "sha256": "f09279d8c90f4317eaa25abc6cde6bc72e2afd34a35011f0f3b6804944eeccf4"
+    },
+    "linux-x64": {
+      "filename": "soyli-linux-x64.tar.gz",
+      "bytes": 42253744,
+      "sha256": "1a03ce452843d271fe08b1051f6c51dc46023e59543c6d2db3b92d7ed9b0c2c0"
+    }
+  },
+  "verification": [
+    "Typecheck and 244 repository tests pass locally and on VPS Bun 1.3.8",
+    "Production web build with same-origin runtime relay-read route",
+    "Hinted station regression through actual HTTP host transport, signature/filter checks, private URL and Origin policy, live EOSE, abort/deadline and quota recovery",
+    "Guarded real station retrieval under local Bun 1.3.11 and VPS Bun 1.3.8",
+    "Unchanged Drone Zone build resolves the Wavefunc hint with only the managed relay configured, decodes MP3 and pauses through its own controls in the shared preview and initial compiled CLI build without Bun/Node on PATH",
+    "Seven scaffold and creator guidance tests",
+    "Final packaged darwin-arm64 CLI passes seven distribution, piped-installer terminal and preview tests without Bun/Node on PATH: 77 assertions"
+  ],
+  "deployment": "active",
+  "publicationVerification": [
+    "All four immutable archives uploaded in verified chunks and validated on the VPS before installer activation"
+  ],
+  "websiteRelease": "20260915153437840-89080",
+  "websiteSourceCommit": "911607705713f5d23096905829d86357f73558e3",
+  "deploymentVerifiedAt": "2026-09-15T15:47:37.512661+00:00",
+  "deploymentVerification": [
+    "Deployment completed with 244 repository tests, Go race checks, 4 relay, 18 Blossom and 8 GRASP tests passing locally and on the VPS",
+    "Candidate Origin probes passed for media, resources and relay-read before activation",
+    "Exact published Drone Zone /play route resolves its station and decodes MP3, then pauses through its own controls in desktop and touch/mobile Chromium without query overrides; no napplet edits or republication",
+    "Public installer freshly downloads and checksum-verifies soyLI 0.8.2 in isolated macOS arm64 directories without Bun/Node on PATH; existing installation and identities untouched",
+    "All four public download sizes and checksum files match this release record",
+    "Five PM2 processes online with zero restarts; catalog/relay/Blossom/Git health pass; both Caddy hashes unchanged and schlaustronics.com returns HTTPS 200"
+  ]
+}

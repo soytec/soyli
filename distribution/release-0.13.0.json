@@ -1,0 +1,69 @@
+{
+  "version": "0.13.0",
+  "bun": "1.3.11",
+  "playwright": "1.63.0",
+  "upstream": {
+    "boilerplate": "cbbebe9bd56271277b054535c0a8d720a588f61d",
+    "skills": "976ad0549c38f93d4ed418d3ea59a615a7e5fd7f"
+  },
+  "toolchain": {
+    "node": "24.21.0",
+    "pnpm": "10.8.0"
+  },
+  "product": "napplet soyLI",
+  "command": "soyli",
+  "compatibilityCommand": "napplet-space",
+  "sourceCommit": "46b51e3",
+  "status": "verified-local",
+  "verifiedAt": "2026-09-20",
+  "deployment": "not-deployed",
+  "executionCoverage": [
+    "darwin-arm64"
+  ],
+  "buildOnlyTargets": [
+    "darwin-x64",
+    "linux-arm64",
+    "linux-x64"
+  ],
+  "artifacts": {
+    "darwin-arm64": {
+      "filename": "soyli-darwin-arm64.tar.gz",
+      "bytes": 26917583,
+      "sha256": "077ff25e83daa7a2dd2a8728c713c8e3e1e14ea43793b4a891bd9c11604e3587"
+    },
+    "darwin-x64": {
+      "filename": "soyli-darwin-x64.tar.gz",
+      "bytes": 29220204,
+      "sha256": "c8d8d1df42bebe9964ed9931d29fd7a0f720ffc75fddf6d7fce0850bed413409"
+    },
+    "linux-arm64": {
+      "filename": "soyli-linux-arm64.tar.gz",
+      "bytes": 42504356,
+      "sha256": "c5554960f4fbb030d67abfcb53513eb75fe12dc6cb7f053d1ba7269afad58e83"
+    },
+    "linux-x64": {
+      "filename": "soyli-linux-x64.tar.gz",
+      "bytes": 42524091,
+      "sha256": "de2898429cd42f155dfba69dfb371749eb36671baebe75cd0c7b777161eafe22"
+    }
+  },
+  "protocolPins": {
+    "nip5d": "24711d9c47bbdd07908bf1d52bf677d9cbc530f0",
+    "napResource": "8c0645d32ceb159bc3e8bcec1107a92862b7e86a",
+    "shim": "0.30.0"
+  },
+  "verification": [
+    "Typecheck and standard repository check pass in the shared workspace.",
+    "21 focused manager/publisher tests pass, including corrupt files, stale edits, symlinks, interrupted external uploads, resume and source-archive remix.",
+    "Four browser checks pass: GUI imports/storage selection/metadata/cover/destinations, hostile origin/token rejection, PNG/WAV/WOFF2/WebM decoding via local and separate Blossom hosts, screenshot and real VP8 recording.",
+    "Interactive capture control and window-close cancellation also pass in visible Chromium.",
+    "Four packaged ARM64 tests (68 assertions) pass: real installer/checksums/corruption rejection, capture, maintained upstream build and mixed embedded/external assets rebuilt from a fresh Git clone without global Bun/Node on PATH.",
+    "Production web build passes. All four archive sizes and SHA-256 hashes are verified locally."
+  ],
+  "remainingVerification": [
+    "Upload immutable archives before deploying installer 0.13.0; nothing was uploaded or deployed in this slice.",
+    "Native Intel macOS/Linux acceptance remains open.",
+    "Independent-client resource playback and nontechnical human manager acceptance remain open; this is not full NAP conformance.",
+    "Managed originals stay in Git (32 assets/32 MiB total/10 MiB per file within 40 MiB source). Large-original storage, provider quota discovery/billing, GIF/pause recording and full Git/proposal management remain separate work."
+  ]
+}

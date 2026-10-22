@@ -1,0 +1,76 @@
+{
+  "version": "0.12.0",
+  "bun": "1.3.11",
+  "playwright": "1.63.0",
+  "upstream": {
+    "boilerplate": "cbbebe9bd56271277b054535c0a8d720a588f61d",
+    "skills": "976ad0549c38f93d4ed418d3ea59a615a7e5fd7f"
+  },
+  "toolchain": {
+    "node": "24.21.0",
+    "pnpm": "10.8.0"
+  },
+  "product": "napplet soyLI",
+  "command": "soyli",
+  "compatibilityCommand": "napplet-space",
+  "sourceCommit": "c62c9362efed18432fe6cc68fe07ea0ca22b2042",
+  "status": "verified-local",
+  "verifiedAt": "2026-09-18",
+  "deployment": "not-deployed",
+  "executionCoverage": [
+    "darwin-arm64"
+  ],
+  "buildOnlyTargets": [
+    "darwin-x64",
+    "linux-arm64",
+    "linux-x64"
+  ],
+  "artifacts": {
+    "darwin-arm64": {
+      "filename": "soyli-darwin-arm64.tar.gz",
+      "bytes": 26906045,
+      "sha256": "bbaa532cfa06db640be956434f88686d18905653aa8fc02191e8f2f8adca4b67"
+    },
+    "darwin-x64": {
+      "filename": "soyli-darwin-x64.tar.gz",
+      "bytes": 29210251,
+      "sha256": "6bb7ade40a72be8ddb49dd513faa1082f1980be3c667636249fb35087d087742"
+    },
+    "linux-arm64": {
+      "filename": "soyli-linux-arm64.tar.gz",
+      "bytes": 42493257,
+      "sha256": "7263931766179642d9486658580b82ac95354b0b25a836d99721d504944c1329"
+    },
+    "linux-x64": {
+      "filename": "soyli-linux-x64.tar.gz",
+      "bytes": 42512787,
+      "sha256": "f495377a7c7305f2a68500ee806ed269d45689ba3d9742ebf4ff5a800efbc0cd"
+    }
+  },
+  "protocolPins": {
+    "nip5d": "24711d9c47bbdd07908bf1d52bf677d9cbc530f0",
+    "napCvm": "ad68a938236e9230324e377cd005008a315ff402",
+    "napWebrtc": "5fae95dd2c8e59bd06c654e0845656add077dcda",
+    "contextvmSdk": "0.13.16",
+    "shim": "0.30.0",
+    "nip34": "6d2979b3f503a8539c983efbcdcf901bbcf9ed23"
+  },
+  "verification": [
+    "Typecheck, 272 repository tests (1776 assertions), production web build and whitespace checks pass",
+    "Three native publishing/collaboration tests pass (96 assertions) against real isolated Khatru, Blossom and GRASP services",
+    "Compiled darwin-arm64 CLI creates a disposable native identity, checkpoints, publishes, resumes after process termination and reuses release identity without Bun/Node on child PATH",
+    "Independent Git reader retrieves exact proposal commit with contributor authorship and original ancestry; GRASP-only relay read-back verifies refs/nostr publication",
+    "Two independent creators exercise own-publication-before-proposal and proposal-before-own-publication, updates, interrupted Git push and identical signed retry",
+    "Local and production-web review UIs play hash-verified artifacts in opaque sandboxes; local review also rebuilds a single-file proposal from source",
+    "Website refresh preserves reviewed revision when a new update arrives; desktop and 390px mobile checks pass without page errors or horizontal overflow",
+    "Merge tests reject stale revision, dirty tree and conflicts; local integration, public Git state and original napplet release are distinct",
+    "Four archives built and SHA-256 checked; only darwin-arm64 executed"
+  ],
+  "remainingVerification": [
+    "Upload immutable 0.12.0 archives before activating installer changes; no production uploads or VPS changes in this slice",
+    "Interactive ngit 2.1.0/3.x review compatibility is not separately executed; ordinary Git and NIP-34 wire interoperability are verified",
+    "Source rebuild supports the managed napplet.json/toolchain profile; arbitrary foreign build systems and patch-series application use ordinary Git/ngit",
+    "Existing synthetic-history journals require explicit migration or a fresh publication identity; no implicit history rewrite",
+    "Other cross-compiled platforms need native execution coverage"
+  ]
+}

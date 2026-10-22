@@ -1,0 +1,679 @@
+<!doctype html>
+<html lang="en">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>soyLI · Your workshop</title>
+  <!-- appearance -->
+  <style>
+    body {
+      margin: 0;
+      background: var(--background);
+      color: var(--foreground);
+      font: 14px system-ui;
+    }
+    header {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      flex-wrap: wrap;
+      padding: 12px 20px;
+    }
+    header strong {
+      margin-right: auto;
+    }
+    button,
+    a {
+      font: inherit;
+    }
+    button {
+      color: inherit;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      padding: 7px 10px;
+      cursor: pointer;
+    }
+    button:focus-visible,
+    a:focus-visible {
+      outline: 2px solid var(--mint);
+      outline-offset: 3px;
+    }
+    #status {
+      padding: 0 20px 12px;
+      margin: 0;
+      min-height: 20px;
+      color: var(--muted-foreground);
+    }
+    #stage iframe {
+      display: block;
+      border: 0;
+      width: 100%;
+      height: calc(100dvh - 135px);
+      min-height: 300px;
+    }
+    #files {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      padding: 12px 20px;
+    }
+    a {
+      color: var(--mint);
+    }
+    dialog {
+      max-width: min(480px, 80vw);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--background);
+      color: var(--foreground);
+      padding: 24px;
+    }
+    dialog::backdrop {
+      background: #0006;
+    }
+    dialog p {
+      overflow-wrap: anywhere;
+    }
+    dialog div {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+    }
+    [hidden] {
+      display: none !important;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    button[aria-pressed='true'] {
+      background: var(--primary);
+      color: var(--primary-foreground);
+    }
+    button:disabled {
+      opacity: 0.6;
+      cursor: wait;
+    }
+    #listing {
+      max-width: 1120px;
+      margin: 24px auto;
+      padding: 0 24px 48px;
+    }
+    .listing-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    .listing-heading h2 {
+      font-size: 28px;
+      letter-spacing: -1px;
+      margin: 0;
+    }
+    #recording-controls input {
+      box-sizing: border-box;
+      border: 1px solid var(--border);
+      border-radius: 5px;
+      background: transparent;
+      color: inherit;
+      padding: 6px;
+      font: inherit;
+    }
+    .preview-media-label {
+      margin: 0;
+      padding: 8px 14px;
+      font-size: 12px;
+      color: var(--muted-foreground);
+    }
+    #listing-status {
+      color: var(--mint);
+      min-height: 20px;
+    }
+    #listing-content {
+      display: grid;
+      grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+      gap: 24px;
+    }
+    .listing-card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+    .listing-card video,
+    .listing-card img,
+    .listing-placeholder {
+      display: block;
+      width: 100%;
+      aspect-ratio: 8/5;
+      object-fit: contain;
+      background: var(--muted);
+    }
+    .listing-placeholder {
+      display: grid;
+      place-items: center;
+      color: var(--muted-foreground);
+    }
+    .listing-caption {
+      padding: 24px;
+    }
+    .listing-caption h1 {
+      font-size: clamp(24px, 4vw, 36px);
+      line-height: 1.1;
+      margin: 12px 0;
+      letter-spacing: -1px;
+    }
+    #listing p,
+    #listing dd,
+    #listing h1 {
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+    }
+    #listing p,
+    #listing li {
+      line-height: 1.6;
+    }
+    .listing-checks {
+      background: var(--muted);
+      padding: 24px;
+      border-radius: 12px;
+    }
+    .listing-checks h2,
+    .listing-details h2 {
+      font-size: 19px;
+      margin: 0 0 16px;
+    }
+    .listing-checks ul {
+      padding-left: 18px;
+    }
+    .listing-checks li {
+      margin: 12px 0;
+    }
+    .muted,
+    .listing-key {
+      color: var(--muted-foreground);
+    }
+    .listing-key {
+      font: 12px/1.5 monospace;
+    }
+    .listing-details {
+      border-top: 1px solid var(--border);
+      padding-top: 24px;
+    }
+    .listing-details dl {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 2fr);
+      gap: 14px;
+      font-size: 13px;
+    }
+    .listing-details dt {
+      color: var(--muted-foreground);
+    }
+    .listing-details dd {
+      margin: 0;
+    }
+    @media (max-width: 700px) {
+      #listing-content {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      #listing {
+        padding: 0 16px 32px;
+      }
+    }
+    #manager {
+      max-width: 1240px;
+      margin: 32px auto;
+      padding: 0 24px 64px;
+    }
+    .workshop-tabs {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      padding: 12px 0 24px;
+    }
+    .workshop-tabs button[aria-pressed='true'] {
+      background: #303c28;
+      color: #fffbed;
+    }
+    .workshop-panel {
+      display: grid;
+      gap: 24px;
+    }
+    .workshop-card {
+      min-width: 0;
+      padding: clamp(18px, 3vw, 32px);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--card);
+    }
+    .workshop-card h2 {
+      margin: 0;
+      font-size: 28px;
+      letter-spacing: -0.8px;
+    }
+    .workshop-card p {
+      line-height: 1.6;
+    }
+    .workshop-card button {
+      margin: 8px 8px 8px 0;
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+    .workshop-card a {
+      display: inline-block;
+      margin: 14px;
+      color: var(--mint);
+    }
+    .workshop-summary {
+      font: 13px monospace;
+      color: var(--mint);
+      overflow-wrap: anywhere;
+    }
+    .workshop-diff-layout {
+      display: grid;
+      grid-template-columns: 230px minmax(0, 1fr);
+      gap: 16px;
+      margin: 24px 0;
+    }
+    .workshop-files {
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 6px;
+      max-height: 420px;
+      overflow: auto;
+    }
+    .workshop-files button {
+      text-align: left;
+      font: 12px monospace;
+      margin: 0;
+    }
+    .workshop-files small {
+      display: block;
+      color: var(--muted-foreground);
+      margin-top: 6px;
+      font: 11px sans-serif;
+    }
+    .workshop-diff {
+      margin: 0;
+      min-height: 200px;
+      max-height: 480px;
+      overflow: auto;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      background: #293126;
+      color: #edf0e0;
+      padding: 22px;
+      border-radius: 10px;
+      font: 12px/1.7 monospace;
+    }
+    .workshop-field {
+      display: flex;
+      flex-direction: column;
+      gap: 9px;
+      margin: 20px 0 8px;
+      color: var(--mint);
+    }
+    .workshop-field input,
+    .workshop-field textarea {
+      font: inherit;
+      padding: 12px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--card);
+      color: inherit;
+      min-width: 0;
+    }
+    .workshop-field textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+    .workshop-facts {
+      display: grid;
+      grid-template-columns: 150px minmax(0, 1fr);
+      gap: 12px 20px;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .workshop-facts dt {
+      color: var(--muted-foreground);
+    }
+    .workshop-facts dd {
+      margin: 0;
+      overflow-wrap: anywhere;
+    }
+    .workshop-check {
+      color: var(--mint);
+      padding: 14px 18px;
+      background: var(--accent);
+      border-radius: 8px;
+    }
+    .workshop-media {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin: 20px 0;
+    }
+    .workshop-media img,
+    .workshop-media video {
+      width: min(100%, 420px);
+      max-height: 280px;
+      object-fit: contain;
+      border-radius: 10px;
+      background: var(--muted);
+    }
+    .workshop-review {
+      width: 100%;
+      height: 850px;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      margin: 20px 0;
+    }
+    button.workshop-error {
+      color: var(--destructive);
+      border-color: var(--destructive);
+      text-align: left;
+    }
+    button[aria-busy='true']::before {
+      content: '';
+      display: inline-block;
+      width: 12px;
+      height: 12px;
+      margin-right: 8px;
+      border: 2px solid currentColor;
+      border-right-color: transparent;
+      border-radius: 50%;
+      animation: workshop-spin 1s linear infinite;
+    }
+    @keyframes workshop-spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      button[aria-busy='true']::before {
+        animation: none;
+      }
+    }
+    @media (max-width: 700px) {
+      .workshop-diff-layout {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .workshop-files {
+        max-height: 150px;
+      }
+      .workshop-facts {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 4px;
+      }
+      .workshop-facts dd {
+        margin-bottom: 10px;
+      }
+    }
+    .manager-heading {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 24px;
+    }
+    .manager-heading h1 {
+      font-size: clamp(32px, 5vw, 56px);
+      line-height: 1.02;
+      letter-spacing: -2px;
+      margin: 14px 0 24px;
+    }
+    .manager-eyebrow {
+      font: 11px monospace;
+      letter-spacing: 2px;
+      color: var(--mint);
+    }
+    .manager-status {
+      padding: 14px 18px;
+      background: var(--accent);
+      border-radius: 8px;
+      line-height: 1.6;
+    }
+    .manager-content {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 24px;
+      align-items: start;
+    }
+    .manager-section {
+      padding: 26px;
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--card);
+      min-width: 0;
+    }
+    .manager-section:nth-child(2) {
+      grid-column: 1 / -1;
+      order: 2;
+    }
+    .manager-section:nth-child(3) {
+      order: 1;
+    }
+    .manager-section:nth-child(4),
+    .manager-section:nth-child(5) {
+      order: 3;
+    }
+    .manager-section h2 {
+      font-size: 25px;
+      letter-spacing: -0.8px;
+      margin: 0 0 12px;
+    }
+    .manager-section p {
+      line-height: 1.6;
+    }
+    .manager-form {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      align-items: end;
+    }
+    .manager-form label {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      font-size: 12px;
+      color: var(--muted-foreground);
+    }
+    .manager-form input,
+    .manager-form textarea,
+    .manager-form select {
+      width: 100%;
+      min-width: 0;
+      padding: 10px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--card);
+      color: var(--foreground);
+      font: 14px/1.5 system-ui;
+    }
+    .manager-form textarea {
+      min-height: 110px;
+      resize: vertical;
+    }
+    .manager-form button {
+      background: var(--primary);
+      color: var(--primary-foreground);
+      padding: 11px 16px;
+    }
+    .manager-form input:focus-visible,
+    .manager-form textarea:focus-visible,
+    .manager-form select:focus-visible {
+      outline: 2px solid var(--mint);
+      outline-offset: 2px;
+    }
+    .asset-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 16px;
+      margin-top: 24px;
+    }
+    .asset-card {
+      padding: 14px;
+      border-radius: 10px;
+      background: var(--muted);
+      overflow: hidden;
+    }
+    .asset-card img,
+    .asset-card video {
+      width: 100%;
+      height: 140px;
+      object-fit: contain;
+      border-radius: 6px;
+      background: var(--accent);
+    }
+    .asset-card audio {
+      width: 100%;
+    }
+    .asset-card button {
+      margin: 8px 6px 0 0;
+    }
+    .asset-card code,
+    .asset-destination {
+      display: block;
+      font-size: 11px;
+      overflow-wrap: anywhere;
+    }
+    .asset-placeholder {
+      height: 110px;
+      display: grid;
+      place-items: center;
+      font:
+        bold 56px Georgia,
+        serif;
+      color: var(--muted-foreground);
+    }
+    .manager-recipe,
+    .manager-section pre {
+      padding: 16px;
+      background: #293124;
+      color: #edf0e0;
+      border-radius: 8px;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+      font: 12px/1.7 monospace;
+    }
+    .manager-budget {
+      font: 12px/1.6 monospace;
+      color: var(--mint);
+    }
+    header {
+      background: var(--accent);
+      border-radius: 0 0 12px 12px;
+    }
+    @media (max-width: 760px) {
+      .manager-content,
+      .manager-form {
+        grid-template-columns: 1fr;
+      }
+      .manager-heading {
+        align-items: start;
+        flex-direction: column;
+      }
+      #manager {
+        padding: 0 16px 32px;
+      }
+      .manager-section {
+        padding: 20px;
+      }
+    }
+  </style>
+  <header>
+    <span id="appearance"></span>
+    <strong>✳ soyLI <span style="font-weight: 400; opacity: 0.6">/ your workshop</span></strong>
+    <div role="group" aria-label="Preview view">
+      <button id="view-play" aria-pressed="true">Play</button>
+      <button id="view-listing" aria-pressed="false">Listing</button>
+      <button id="view-manager" aria-pressed="false">Manage project</button>
+    </div>
+    <div id="settings"></div>
+    <button id="reload">Reload preview</button
+    ><button id="connect">Connect browser extension</button>
+    <details style="width: 100%">
+      <summary style="cursor: pointer">Network settings</summary>
+      <div id="network-settings"></div>
+    </details>
+    <details id="controller-details" style="width: 100%">
+      <summary style="cursor: pointer">Controller tester</summary>
+      <div id="controller-stage"></div>
+    </details>
+    <details id="connection-details" style="width: 100%">
+      <summary style="cursor: pointer">Connection diagnostics</summary>
+      <p>Transport observations. RTT excludes game processing, rendering and simulated delay.</p>
+      <pre id="connection-diagnostics" style="white-space: pre-wrap; overflow-wrap: anywhere">
+No peer connections yet.</pre>
+    </details>
+  </header>
+  <div id="media" style="padding: 0 20px"></div>
+  <p id="status" role="status">Preparing preview…</p>
+  <main id="stage"></main>
+  <section id="listing" hidden aria-label="Listing preview">
+    <div class="listing-heading">
+      <h2>Your next little release.</h2>
+      <label style="font-size: 13px"
+        ><input id="capture-live" type="checkbox" /> Play in a capture window first</label
+      >
+      <button id="capture" hidden>Capture screenshot</button>
+    </div>
+    <fieldset
+      id="recording-controls"
+      hidden
+      style="border: 0; padding: 0; display: flex; gap: 12px; align-items: center; flex-wrap: wrap"
+    >
+      <legend>Preview clip · silent WebM</legend>
+      <label
+        >Start after
+        <input
+          id="record-start"
+          type="number"
+          min="0"
+          max="10"
+          step="0.5"
+          value="0"
+          style="width: 65px"
+        />
+        seconds</label
+      >
+      <label
+        >Length
+        <input
+          id="record-duration"
+          type="number"
+          min="2"
+          max="8"
+          step="1"
+          value="6"
+          style="width: 65px"
+        />
+        seconds</label
+      >
+      <button id="record-video">Record clip</button>
+    </fieldset>
+    <p id="listing-status" role="status">
+      Local draft · changes to napplet.json appear here automatically.
+    </p>
+    <div id="listing-content"></div>
+  </section>
+  <section id="manager" hidden aria-label="Project manager">
+    <div class="manager-heading">
+      <div>
+        <p class="manager-eyebrow">YOUR LOCAL WORKSHOP</p>
+        <h1>A little polish.<br />A lot more yours.</h1>
+      </div>
+      <button id="manager-refresh">Reload from files</button>
+    </div>
+  </section>
+  <div id="files" aria-label="Session file downloads"></div>
+  <dialog id="prompt" aria-label="Napplet permission" aria-describedby="prompt-detail">
+    <p id="prompt-detail"></p>
+    <div>
+      <button id="cancel">Cancel</button><button id="later" hidden>Not now</button
+      ><button id="confirm">Save file</button
+      ><a id="open-link" target="_blank" rel="noopener noreferrer" hidden>Open link</a>
+    </div>
+  </dialog>
+  <script type="module" src="./runtime.js"></script>
+</html>

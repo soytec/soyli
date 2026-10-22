@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$version": 1,
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "textSize": {
+      "type": "integer",
+      "title": "Text size",
+      "description": "Base text size in pixels. Changes apply while the napplet is running.",
+      "minimum": 10,
+      "maximum": 20,
+      "default": 13,
+      "x-napplet-section": "Appearance",
+      "x-napplet-order": 1
+    },
+    "controlSize": {
+      "type": "integer",
+      "title": "Control height",
+      "description": "Choose compact controls or larger touch targets, in pixels.",
+      "minimum": 24,
+      "maximum": 44,
+      "default": 28,
+      "x-napplet-section": "Appearance",
+      "x-napplet-order": 2
+    },
+    "selectText": {
+      "type": "boolean",
+      "title": "Allow text selection",
+      "description": "Allow selecting interface text. Text inputs always remain selectable.",
+      "default": false,
+      "x-napplet-section": "Interaction"
+    }
+  }
+}

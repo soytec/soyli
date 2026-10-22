@@ -1,0 +1,91 @@
+{
+  "version": "0.14.1",
+  "bun": "1.3.11",
+  "playwright": "1.63.0",
+  "upstream": {
+    "boilerplate": "cbbebe9bd56271277b054535c0a8d720a588f61d",
+    "skills": "976ad0549c38f93d4ed418d3ea59a615a7e5fd7f"
+  },
+  "toolchain": {
+    "node": "24.21.0",
+    "pnpm": "10.8.0"
+  },
+  "product": "napplet soyLI",
+  "command": "soyli",
+  "compatibilityCommand": "napplet-space",
+  "sourceCommit": "10a475ff9fb9ca6f6c6f944be81da23527c476a5",
+  "status": "published",
+  "verifiedAt": "2026-09-20",
+  "deployment": "active",
+  "executionCoverage": [
+    "darwin-arm64",
+    "darwin-x64",
+    "linux-arm64",
+    "linux-x64"
+  ],
+  "executionModes": {
+    "darwin-arm64": "native macOS ARM64; packaged installer, starter, capture and fresh-clone workshop checks",
+    "darwin-x64": "Rosetta on macOS ARM64; fresh managed toolchain/browser; Bun AVX warning observed",
+    "linux-arm64": "non-root ARM64 container in an ARM64 Linux VM; fresh managed toolchain/browser",
+    "linux-x64": "non-root x64 container under emulation; fresh managed toolchain/browser"
+  },
+  "buildOnlyTargets": [],
+  "artifacts": {
+    "darwin-arm64": {
+      "filename": "soyli-darwin-arm64.tar.gz",
+      "bytes": 26924918,
+      "sha256": "8354d2d56dda250d3d7e7845e4e5f236ea70d409bd2f4ff50c88e159530d0306"
+    },
+    "darwin-x64": {
+      "filename": "soyli-darwin-x64.tar.gz",
+      "bytes": 29231053,
+      "sha256": "4b45527f733471ffa6cfe90e846f6c1b764c86c0140b4f5402b08e0cf707e21d"
+    },
+    "linux-arm64": {
+      "filename": "soyli-linux-arm64.tar.gz",
+      "bytes": 42515272,
+      "sha256": "07c0d0bb9a5fb3ccf340ca77b1d431c8e310bdc1820c77e461591d5c37897e84"
+    },
+    "linux-x64": {
+      "filename": "soyli-linux-x64.tar.gz",
+      "bytes": 42530195,
+      "sha256": "08192297fa5d5bbc9c9711c3fc2d2706aa43962efd10a583c1b300d8db0f27ca"
+    }
+  },
+  "protocolPins": {
+    "nip5d": "24711d9c47bbdd07908bf1d52bf677d9cbc530f0",
+    "napResource": "8c0645d32ceb159bc3e8bcec1107a92862b7e86a",
+    "shim": "0.30.0"
+  },
+  "interoperabilityPins": {
+    "upstream": "956135bfc41a2cff5e45d6c68d9f9a4d68c50531",
+    "paja": "0.16.4",
+    "ngitVerified": "2.1.0"
+  },
+  "verification": [
+    "Typecheck and repository checks pass: 292 tests, 1988 assertions. Production web build passes.",
+    "Compiled ARM64 publisher round trip passes in independent Paja 0.16.4 with Blossom image and starter configuration. Independently authored HTML in upstream-built root/named/snapshot manifests runs in Soy; incorrect aggregate rejected specifically as a hash mismatch. Ordinary Git/ngit discovers and clones a second creator proposal commit with intact ancestry. One acceptance test, 26 assertions.",
+    "Five packaged ARM64 checks pass with no global Bun/Node on PATH: installer, capture, upstream verify/configuration, fresh Git clone with managed assets, Vite watcher restart after a workshop edit; 93 assertions.",
+    "Isolated workshop Chromium flow passes: edit, diff, checkpoint, check, publication failure/retry, proposal with assets, Original/Proposed playback, merge and separate release; 25 assertions. Desktop and 390px screenshots inspected.",
+    "Fresh toolchain/browser platform smoke passes on macOS x64 under Rosetta and Linux ARM64/x64 containers: maintained starter creation, typecheck/build, sandbox check, asset/config inspection, Git checkpoint/status.",
+    "All four archive sizes and SHA-256 checksums independently verified locally."
+  ],
+  "remainingVerification": [
+    "Native older Intel Mac/Monterey hardware and Keychain behavior are not qualified by Rosetta. Linux x64 is emulated; Linux Secret Service behavior was not exercised.",
+    "Nontechnical human workshop acceptance remains open; browser automation is separate evidence.",
+    "Independent tests cover selected paths, not every NAP operation, CONFIG schema edge case, public-gallery inclusion, full upstream CLI publishing or ngit review/merge UI.",
+    "Gameplay, public-network multiplayer, codecs across browsers and other CVM providers retain their own acceptance requirements."
+  ],
+  "websiteRelease": "20260920084527457-12824",
+  "websiteSourceCommit": "58c7ccb",
+  "previousWebsiteRelease": "20260920070006760-46483",
+  "deploymentVerifiedAt": "2026-09-20T09:04:49.263317+00:00",
+  "deploymentVerification": [
+    "All four archives uploaded and verified before installer activation. Public archive sizes and SHA-256 sidecars match this record.",
+    "Standard deployment passes typecheck, 292 repository tests, Go relay tests, 4 Bun relay tests, 18 Blossom tests and 8 GRASP tests locally and on VPS Bun 1.3.8. Candidate origin/admin and encrypted CVM health checks pass.",
+    "Public macOS ARM64 installer test in a temporary directory passes version 0.14.1, doctor and new starter creation with bundled skills and configuration fallback; existing installation and identities untouched.",
+    "Public Chromium checks pass for gallery/docs/create/about, Impact Yard detail/OG and fullscreen sandbox playback; no page errors observed. Hydrated landing screenshot inspected.",
+    "Six PM2 processes online with zero restarts at observation, index fresh without relay errors, Caddy/coturn/backup timer active, Blossom healthy. Shared Caddy hashes unchanged and the other site returns HTTPS 200.",
+    "Public NIP-11, relay WebSocket query and encrypted anonymous CVM soy_session round trip pass. Two publish-retry messages observed during client shutdown after the successful response; no real-network gameplay or TURN qualification inferred."
+  ]
+}

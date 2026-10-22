@@ -1,0 +1,32 @@
+{
+  "version": "0.2.0",
+  "bun": "1.3.11",
+  "playwright": "1.63.0",
+  "upstream": {
+    "boilerplate": "cbbebe9bd56271277b054535c0a8d720a588f61d",
+    "skills": "976ad0549c38f93d4ed418d3ea59a615a7e5fd7f"
+  },
+  "toolchain": {
+    "node": "24.21.0",
+    "pnpm": "10.8.0"
+  },
+  "sourceCommit": "7f8618d",
+  "artifacts": {
+    "darwin-arm64": {
+      "bytes": 26325396,
+      "sha256": "897a654285cdae459f60dc87c57ba5d7cd96fc1a4d0b2c6b6c4d7417df860f34"
+    },
+    "darwin-x64": {
+      "bytes": 28641015,
+      "sha256": "1f6269a89fc4239a2c98290dcddcd2cb43e9225a6faee9089b2fcf177d9f44e7"
+    },
+    "linux-arm64": {
+      "bytes": 41926427,
+      "sha256": "4ba4247ec524ebe824738af6c1ecc5bd09af647c4ec5e8e9fe8dcd84b2ef59d9"
+    },
+    "linux-x64": {
+      "bytes": 41939732,
+      "sha256": "b64092983b3e9bb7cd77baaa0099889cd9de061e208c8972e8bde016d6b4cbd2"
+    }
+  }
+}

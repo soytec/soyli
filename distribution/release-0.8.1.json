@@ -1,0 +1,75 @@
+{
+  "version": "0.8.1",
+  "bun": "1.3.11",
+  "playwright": "1.63.0",
+  "upstream": {
+    "boilerplate": "cbbebe9bd56271277b054535c0a8d720a588f61d",
+    "skills": "976ad0549c38f93d4ed418d3ea59a615a7e5fd7f"
+  },
+  "toolchain": {
+    "node": "24.21.0",
+    "pnpm": "10.8.0"
+  },
+  "product": "napplet soyLI",
+  "command": "soyli",
+  "compatibilityCommand": "napplet-space",
+  "sourceCommit": "949fc97ebcb446f867101b412a7b1856926752a7",
+  "status": "published",
+  "verifiedAt": "2026-09-15",
+  "verification": [
+    "236 repository tests and typecheck",
+    "18 Blossom service/process tests including a paced 11 MiB upload lasting over 24 seconds, idle/overall cancellation, partial-file cleanup and upload-slot recovery",
+    "Client deadline tests cover separate upload/verification budgets, progressing downloads, idle/trickle timeouts, caller cancellation, oversized bytes, hash mismatch and redirects",
+    "Local publication/retry integration verifies frozen releases, standard relay/Blossom bytes and retained Git release refs; native key-store case skipped",
+    "Production web build",
+    "Seven packaged CLI distribution, installer terminal and preview tests on darwin-arm64, 77 assertions"
+  ],
+  "executionCoverage": [
+    "darwin-arm64"
+  ],
+  "buildOnlyTargets": [
+    "darwin-x64",
+    "linux-arm64",
+    "linux-x64"
+  ],
+  "deployment": "active",
+  "artifacts": {
+    "darwin-arm64": {
+      "filename": "soyli-darwin-arm64.tar.gz",
+      "bytes": 26633002,
+      "sha256": "20567663ec5015789c89df94bc24a3336c795bfa0f26d5f06bed74eccd73c3ac"
+    },
+    "darwin-x64": {
+      "filename": "soyli-darwin-x64.tar.gz",
+      "bytes": 28942492,
+      "sha256": "3595f52bf952796c6eb1115c818e8bdaa970aacf90128f88b3c8eb5f305b48b7"
+    },
+    "linux-arm64": {
+      "filename": "soyli-linux-arm64.tar.gz",
+      "bytes": 42226704,
+      "sha256": "279ea281ea9667129ec071ed8f686fd5146dad48a25c4495f67bdbed35775457"
+    },
+    "linux-x64": {
+      "filename": "soyli-linux-x64.tar.gz",
+      "bytes": 42246416,
+      "sha256": "283db939ad896fa6aa224c2be999619363e9ceb20e8f41351a213b6c73a99042"
+    }
+  },
+  "compatibilityVerification": [
+    "2026-09-15: corrected test-only HTTP framing; Bun 1.3.8 node:http omitted Content-Length for streamed test writes",
+    "21 Blossom service/process and shared-uploader tests pass on the VPS under Bun 1.3.8 using isolated temporary storage and loopback ports",
+    "18 local Blossom service/process tests and typecheck pass; compiled CLI artifacts are unchanged"
+  ],
+  "websiteRelease": "20260915143300255-41346",
+  "websiteSourceCommit": "f2ffa08d1bcd5b88dc10dc2250f94bba56ee5c04",
+  "publicationObservedAt": "2026-09-15T14:44:00Z",
+  "deploymentVerification": [
+    "All four existing VPS archives match the recorded SHA-256; public checksum files and download sizes verified without replacing immutable files",
+    "Public installer selects 0.8.1; a fresh isolated darwin-arm64 download/install and soyli --version pass without Bun or Node on PATH",
+    "Full deployment checks pass locally and on VPS Bun 1.3.8: 238 repository tests, typecheck, Go race checks, 4 relay, 18 Blossom and 8 GRASP tests",
+    "Live 11 MiB Blossom upload took 78816 ms, returned 201, matched SHA-256 on download, and was deleted with subsequent HEAD 404",
+    "HTTPS origin correction passes candidate probes, production MP3 playback with fullscreen/pause/teardown, and host resource loading; CLI behavior and archives unchanged",
+    "Three live Chromium checks pass for gallery navigation, no-JavaScript responsive SSR and mobile onboarding/downloads",
+    "Five PM2 processes online with zero restarts; discovery and public service health pass; both Caddy hashes unchanged; schlaustronics.com HTTPS 200"
+  ]
+}
