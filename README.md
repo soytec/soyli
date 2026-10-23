@@ -4,7 +4,9 @@ Standalone Bun source repository for the Soy CLI. CLI code, shared implementatio
 creator templates, pinned starter snapshots, and browser preview assets live here;
 no checkout of the original napplet-soy project is required.
 
-Requires Bun 1.4.3 or newer for development. Git is needed for source collaboration.
+Requires Bun 1.4.3 or newer for development. CLI builds require the exact version in
+`.bun-version` (currently 1.4.3), which is embedded in the executable. Git is needed
+for source collaboration.
 
 ```sh
 bun install --frozen-lockfile

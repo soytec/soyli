@@ -15,6 +15,11 @@ export async function compileCli(
     distribution?: string;
   } = {},
 ) {
+  const bunVersion = (await Bun.file(join(root, '.bun-version')).text()).trim();
+  if (Bun.version !== bunVersion)
+    throw new Error(
+      `CLI builds require Bun ${bunVersion} (running ${Bun.version}). Install the version in .bun-version before building.`,
+    );
   const build = await Bun.build({
     entrypoints: [join(root, 'src/index.ts')],
     target: 'bun',
