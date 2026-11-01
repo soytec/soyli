@@ -25,6 +25,7 @@ import type { PlaybackReadPool } from './playback';
 import { readRelayUrl } from './relay-policy';
 
 type Pointer = Parameters<NonNullable<EventStore['eventLoader']>>[0];
+type CoveredEventResult = { events: SignedEvent[]; incomplete: boolean; error?: string };
 export type OutboxStoreOptions = {
   maxEvents?: number;
   maxBytes?: number;
@@ -53,6 +54,12 @@ export class OutboxEventStore {
   ) => Observable<SignedEvent>;
   private bytes = 0;
   private closed = false;
+  // Share only identical coverage plans. Different IDs must not share EOSE evidence:
+  // a capped batch can require additional requests for some, but not all, IDs.
+  private readonly coveredLoads = new Map<
+    string,
+    { controller: AbortController; users: number; result: Promise<CoveredEventResult> }
+  >();
   private readonly now: () => number;
   private readonly maxEvents: number;
   private readonly maxBytes: number;
@@ -281,6 +288,53 @@ export class OutboxEventStore {
     trustedRelays: string[],
     timeoutMs: number,
     signal?: AbortSignal,
+  ): Promise<CoveredEventResult> {
+    if (this.closed || signal?.aborted) return { events: [], incomplete: true };
+    if (!/^[a-f0-9]{64}$/.test(id) || !Number.isSafeInteger(timeoutMs) || timeoutMs < 1)
+      throw new Error('Invalid OUTBOX event load');
+    const urls = [...new Set(trustedRelays.map((url) => readRelayUrl(url, this.relays, true)))];
+    if (urls.length > 8) throw new Error('OUTBOX loader relay quota exceeded');
+    const key = JSON.stringify([id, [...urls].sort(), timeoutMs]);
+    let load = this.coveredLoads.get(key);
+    if (!load) {
+      const controller = new AbortController();
+      const entry = {
+        controller,
+        users: 0,
+        result: this.runEventWithCoverage(id, urls, timeoutMs, controller.signal).finally(() => {
+          if (this.coveredLoads.get(key) === entry) this.coveredLoads.delete(key);
+        }),
+      };
+      load = entry;
+      // Bound the sharing index; overflow requests retain their own bounded lifetime.
+      if (this.coveredLoads.size < 64) this.coveredLoads.set(key, entry);
+    }
+    load.users++;
+    const current = load;
+    let abort: (() => void) | undefined;
+    try {
+      const cancelled = new Promise<CoveredEventResult>((resolve) => {
+        abort = () => resolve({ events: [], incomplete: true, error: 'Event load cancelled.' });
+        signal?.addEventListener('abort', abort, { once: true });
+        if (signal?.aborted) abort();
+      });
+      const result = await Promise.race([current.result, cancelled]);
+      // Callers must not be able to mutate another caller's result array.
+      return { ...result, events: [...result.events] };
+    } finally {
+      if (abort) signal?.removeEventListener('abort', abort);
+      if (--current.users === 0) {
+        if (this.coveredLoads.get(key) === current) this.coveredLoads.delete(key);
+        current.controller.abort();
+      }
+    }
+  }
+
+  private async runEventWithCoverage(
+    id: string,
+    trustedRelays: string[],
+    timeoutMs: number,
+    signal?: AbortSignal,
   ): Promise<{ events: SignedEvent[]; incomplete: boolean; error?: string }> {
     if (this.closed || signal?.aborted) return { events: [], incomplete: true };
     if (!/^[a-f0-9]{64}$/.test(id) || !Number.isSafeInteger(timeoutMs) || timeoutMs < 1)
@@ -385,6 +439,8 @@ export class OutboxEventStore {
     this.stopped.next();
     this.stopped.complete();
     this.scope.unsubscribe();
+    for (const load of this.coveredLoads.values()) load.controller.abort();
+    this.coveredLoads.clear();
     for (const id of this.entries.keys()) this.remove(id);
     this.store.dispose();
     this.changes.complete();

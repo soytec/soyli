@@ -9,6 +9,8 @@ import { redactDiagnostic } from '../../diagnostics/src';
 
 /** A browser-owned, signer-free store; all wire events are verified before ingestion. */
 export class ProtocolClient {
+  private closed = false;
+  private lifetime = new AbortController();
   readonly store = new EventStore({ verifyEvent: verifySignature });
   private retained = new Map<string, number>();
   // EventStore consumes kind 5 into its deletion manager instead of storing the event.
@@ -23,6 +25,7 @@ export class ProtocolClient {
     { pool: RelayPool; users: number; timer?: ReturnType<typeof setTimeout> }
   >();
   private connection(url: string) {
+    if (this.closed) throw new Error('Protocol client closed.');
     let entry = this.connections.get(url);
     if (!entry) {
       if (this.connections.size >= 24) {
@@ -41,6 +44,7 @@ export class ProtocolClient {
     return {
       pool: current.pool,
       release: () => {
+        if (this.closed) return;
         if (--current.users || this.connections.get(url) !== current) return;
         current.timer = setTimeout(() => {
           current.pool.close();
@@ -51,11 +55,19 @@ export class ProtocolClient {
     };
   }
   close() {
+    if (this.closed) return;
+    this.closed = true;
+    this.lifetime.abort();
     for (const entry of this.connections.values()) {
       clearTimeout(entry.timer);
       entry.pool.close();
     }
     this.connections.clear();
+    this.store.dispose();
+    this.deletionUpdates.complete();
+    this.deletions.clear();
+    this.retained.clear();
+    this.retainedBytes = 0;
   }
   private remember(event: SignedEvent) {
     this.store.add(event);
@@ -80,6 +92,7 @@ export class ProtocolClient {
     readonly allowed: (event: SignedEvent) => boolean = () => true,
   ) {}
   seed(inputs: SignedEvent[], fromCache = false) {
+    if (this.closed) return;
     for (const input of inputs)
       try {
         const event = verifiedEvent(input);
@@ -101,6 +114,8 @@ export class ProtocolClient {
     requireComplete = false,
     onRelayComplete?: () => void,
   ) {
+    signal = AbortSignal.any([signal, this.lifetime.signal]);
+    signal.throwIfAborted();
     const relays = [...new Set([...hints, ...this.relays()])]
       .flatMap((value) => {
         try {
@@ -234,6 +249,7 @@ export class ProtocolClient {
     }).pipe(shareReplay({ bufferSize: 1, refCount: true }));
   }
   async publish(input: SignedEvent, hints: string[] = [], signal?: AbortSignal) {
+    signal = AbortSignal.any([...(signal ? [signal] : []), this.lifetime.signal]);
     signal?.throwIfAborted();
     const event = verifiedEvent(input);
     if (!this.allowed(event)) throw new Error('This action is unavailable here.');
