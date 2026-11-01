@@ -5,7 +5,7 @@ import { join } from 'node:path';
 
 const command = process.env.SPACE_TEST_CLI
   ? [process.env.SPACE_TEST_CLI]
-  : [process.execPath, new URL('../index.ts', import.meta.url).pathname];
+  : [process.execPath, new URL('../../../../src/index.ts', import.meta.url).pathname];
 
 test('soyli imports a custom binary asset pack and retains it through assets sync', async () => {
   const root = await mkdtemp(join(tmpdir(), 'soy-data-asset-'));

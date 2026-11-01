@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { CoordinatedAudio, type AudioMediaClient } from '../docs/examples/coordinated-audio';
+import { CoordinatedAudio, type AudioMediaClient } from '../coordinated-audio';
 
 class Context {
   state = 'running';

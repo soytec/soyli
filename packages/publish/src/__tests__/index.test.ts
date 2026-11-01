@@ -1,33 +1,33 @@
-import { ProtocolClient } from '../../client/src/nostr';
-import { publicationDestinations } from '../../nostr/src/publication-copies';
+import { ProtocolClient } from '../../../client/src/nostr';
+import { publicationDestinations } from '../../../nostr/src/publication-copies';
 import {
   planLifecycle,
   createLifecycleReceipt,
   executeLifecycle,
   lifecycleFinished,
   parseReceipt,
-} from '../../lifecycle/src';
-import { migrationTemplate } from '../../migration/src';
+} from '../../../lifecycle/src';
+import { migrationTemplate } from '../../../migration/src';
 import {
   MANIFEST_PRESENTATION_PROFILE,
   manifestScreenshotSources,
   manifestVideoSources,
-} from '../../protocol/src/presentation';
-import { importAsset, readAssets, validateAssets } from '../../assets/src';
-import { createRemix } from '../../remix/src';
-import { sourceArchive } from '../../remix/src/archive';
+} from '../../../protocol/src/presentation';
+import { importAsset, readAssets, validateAssets } from '../../../assets/src';
+import { createRemix } from '../../../remix/src';
+import { sourceArchive } from '../../../remix/src/archive';
 import { expect, test } from 'bun:test';
 import { mkdtemp, rm, symlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { Accounts, type Vault } from '../../identity/src/accounts';
+import { Accounts, type Vault } from '../../../identity/src/accounts';
 import {
   encodeAddress,
   sha256,
   validateRelease,
   verifiedEvent,
   type SignedEvent,
-} from '../../protocol/src';
+} from '../../../protocol/src';
 import {
   finalizeEvent,
   generateSecretKey,
@@ -36,21 +36,21 @@ import {
   matchFilters,
   nip19,
 } from 'nostr-tools';
-import { DiagnosticError } from '../../diagnostics/src';
-import { validateManifest } from '../../protocol/src/manifest';
-import { sourceGit, sourceUrls } from '../../grasp/src/client';
+import { DiagnosticError } from '../../../diagnostics/src';
+import { validateManifest } from '../../../protocol/src/manifest';
+import { sourceGit, sourceUrls } from '../../../grasp/src/client';
 import {
   publishProject as publishCommitted,
   publicationStatus,
   type PublishOptions,
-} from './index';
-import { Journal, readJson } from './journal';
-import { MAX_PUBLICATION_JOURNAL_BYTES } from './limits';
-import { projectSchema } from './config';
-import { newer } from './relay';
-import { appReferences, descriptorImages } from '../../protocol/src/preview';
-import { writeBinding } from './binding';
-import { inspectProject } from './project';
+} from '../index';
+import { Journal, readJson } from '../journal';
+import { MAX_PUBLICATION_JOURNAL_BYTES } from '../limits';
+import { projectSchema } from '../config';
+import { newer } from '../relay';
+import { appReferences, descriptorImages } from '../../../protocol/src/preview';
+import { writeBinding } from '../binding';
+import { inspectProject } from '../project';
 
 // Existing publication cases explicitly checkpoint fixture edits before sharing.
 async function publishProject(options: PublishOptions) {
@@ -558,7 +558,7 @@ for (const snapshot of [false, true]) {
     f.options.snapshot = snapshot;
     try {
       const video = await Bun.file(
-        new URL('../../../tests/fixtures/preview.webm', import.meta.url),
+        new URL('../../../../tests/fixtures/preview.webm', import.meta.url),
       ).bytes();
       f.options.requirePreview = true;
       f.options.check = async () => ({
@@ -1271,7 +1271,7 @@ test('a repeated publication repairs missing relay events/blobs and retries fail
             ? [process.env.SPACE_TEST_CLI]
             : [
                 process.execPath,
-                new URL('../../../src/index.ts', import.meta.url).pathname,
+                new URL('../../../../src/index.ts', import.meta.url).pathname,
               ]),
           'status',
           '--project',
@@ -1329,7 +1329,7 @@ function cliStatus(project: string, json: boolean) {
     [
       ...(process.env.SPACE_TEST_CLI
         ? [process.env.SPACE_TEST_CLI]
-        : [process.execPath, new URL('../../../src/index.ts', import.meta.url).pathname]),
+        : [process.execPath, new URL('../../../../src/index.ts', import.meta.url).pathname]),
       'status',
       '--project',
       project,

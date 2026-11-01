@@ -1,7 +1,7 @@
 import { test, expect } from 'bun:test';
-import { videoMatchesBuild } from './media-review';
-import { sha256 } from '../../protocol/src';
-import { projectSchema } from './config';
+import { videoMatchesBuild } from '../media-review';
+import { sha256 } from '../../../protocol/src';
+import { projectSchema } from '../config';
 
 test('media reuse approval is tied to both the exact updated build and unchanged clip', async () => {
   const clip = new TextEncoder().encode('existing clip');

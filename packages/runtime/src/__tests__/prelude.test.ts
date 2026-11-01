@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test';
-import { SHELL_PRELUDE } from './prelude';
+import { SHELL_PRELUDE } from '../prelude';
 
 test('SHELL supports reflects injected domains immediately, never the environment hint', async () => {
   let receive: (event: any) => void = () => {};

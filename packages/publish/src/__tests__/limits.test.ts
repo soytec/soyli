@@ -2,11 +2,11 @@ import { expect, test } from 'bun:test';
 import { mkdtemp, rm, symlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { sourceGit } from '../../packages/grasp/src/client';
+import { sourceGit } from '../../../grasp/src/client';
 
 const command = process.env.SPACE_TEST_CLI
   ? [process.env.SPACE_TEST_CLI]
-  : [process.execPath, new URL('../index.ts', import.meta.url).pathname];
+  : [process.execPath, new URL('../../../../src/index.ts', import.meta.url).pathname];
 
 test('real CLI accepts 131 tracked files plus a 12 MiB built entry and explains the 1024-input boundary', async () => {
   const root = await mkdtemp(join(tmpdir(), 'soyli-source-limit-'));

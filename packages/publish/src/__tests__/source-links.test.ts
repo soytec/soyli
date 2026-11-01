@@ -2,12 +2,12 @@ import { expect, test } from 'bun:test';
 import { lstat, mkdtemp, readlink, rename, rm, symlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { sourceGit } from '../../packages/grasp/src/client';
-import { sha256 } from '../../packages/protocol/src';
+import { sourceGit } from '../../../grasp/src/client';
+import { sha256 } from '../../../protocol/src';
 
 const command = process.env.SPACE_TEST_CLI
   ? [process.env.SPACE_TEST_CLI]
-  : [process.execPath, new URL('../index.ts', import.meta.url).pathname];
+  : [process.execPath, new URL('../../../../src/index.ts', import.meta.url).pathname];
 
 async function fixture() {
   const root = await mkdtemp(join(tmpdir(), 'soyli-source-links-'));

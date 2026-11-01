@@ -1,6 +1,6 @@
 import { test, expect } from 'bun:test';
-import { attachNappletHost } from './host';
-import type { NappletMedia } from './media-session';
+import { attachNappletHost } from '../host';
+import type { NappletMedia } from '../media-session';
 
 test('media reports are frame/account bound without SHELL and cannot exhaust lifecycle commands', () => {
   const originalWindow = Object.getOwnPropertyDescriptor(globalThis, 'window');

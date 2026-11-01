@@ -1,5 +1,5 @@
 import { expect, test } from 'bun:test';
-import { NappletMedia } from './media-session';
+import { NappletMedia } from '../media-session';
 
 class FakeAudio extends EventTarget {
   src = '';

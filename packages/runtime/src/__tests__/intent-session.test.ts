@@ -1,6 +1,6 @@
 import { expect, test } from 'bun:test';
-import { attachNappletHost } from './host';
-import { IntentWorkspace } from './intent-session';
+import { attachNappletHost } from '../host';
+import { IntentWorkspace } from '../intent-session';
 
 test('bound host replies with official invoke result and cold delivery follows target shell init', async () => {
   const originalWindow = Object.getOwnPropertyDescriptor(globalThis, 'window'),

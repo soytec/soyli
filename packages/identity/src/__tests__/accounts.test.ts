@@ -8,7 +8,12 @@ test('plaintext opt-in survives CLI restarts and keeps native account selection 
   const home = await mkdtemp(join(tmpdir(), 'soyli-plaintext-cli-'));
   async function invoke(args: string[], enabled: boolean) {
     const child = Bun.spawn(
-      [process.execPath, new URL('../index.ts', import.meta.url).pathname, ...args, '--json'],
+      [
+        process.execPath,
+        new URL('../../../../src/index.ts', import.meta.url).pathname,
+        ...args,
+        '--json',
+      ],
       {
         cwd: home,
         env: {
@@ -47,7 +52,12 @@ async function run(args: string[], input = '', onSpawn?: (stop: () => void) => v
   const directory = await mkdtemp(join(tmpdir(), 'napplet-account-command-'));
   try {
     const child = Bun.spawn(
-      [process.execPath, new URL('../index.ts', import.meta.url).pathname, ...args, '--json'],
+      [
+        process.execPath,
+        new URL('../../../../src/index.ts', import.meta.url).pathname,
+        ...args,
+        '--json',
+      ],
       {
         cwd: directory,
         env: { PATH: process.env.PATH, SPACE_ACCOUNT_HOME: directory },
@@ -199,7 +209,7 @@ test('boilerplate onboarding reports a reusable backup outside Git and the CLI c
     `
     import { join } from 'node:path';
     import { rm } from 'node:fs/promises';
-    import { NativeVault } from ${JSON.stringify(new URL('../../packages/identity/src/accounts.ts', import.meta.url).pathname)};
+    import { NativeVault } from ${JSON.stringify(new URL('../accounts.ts', import.meta.url).pathname)};
     const path = (name) => join(process.env.TEST_VAULT, name);
     NativeVault.prototype.get = async (name) => {
       const file = Bun.file(path(name));
@@ -215,7 +225,7 @@ test('boilerplate onboarding reports a reusable backup outside Git and the CLI c
         process.execPath,
         '--preload',
         preload,
-        new URL('../index.ts', import.meta.url).pathname,
+        new URL('../../../../src/index.ts', import.meta.url).pathname,
         ...args,
         '--json',
       ],

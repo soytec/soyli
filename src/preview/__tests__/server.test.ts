@@ -2,11 +2,11 @@ import { expect, test } from 'bun:test';
 import { mkdir, mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import pins from '../../vendor/toolchain.json';
+import pins from '../../../vendor/toolchain.json';
 
 const command = process.env.SPACE_TEST_CLI
   ? [process.env.SPACE_TEST_CLI]
-  : [process.execPath, new URL('../index.ts', import.meta.url).pathname];
+  : [process.execPath, new URL('../../index.ts', import.meta.url).pathname];
 const quote = (value: string) => `'${value.replaceAll("'", "'\\''")}'`;
 async function eventually(predicate: () => Promise<boolean>, message: string) {
   for (let tries = 0; tries < 60; tries++) {
