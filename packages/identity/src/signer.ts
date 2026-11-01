@@ -18,6 +18,8 @@ export class AccountError extends Error {
   }
 }
 export const publishingKinds = [5, 30617, 30618, 24242, 32267, 35129, 15129, 5129];
+// Shell wallet only; these permissions are never granted to a napplet iframe.
+export const walletSigningKinds = [17375, 7375, 7376, 10019, 9321, 22242];
 // Viewer-authorized COMMON/LISTS, scoped public app data, Blossom auth and shell actions.
 export const websiteKinds = [
   0,
@@ -45,6 +47,7 @@ export const websiteKinds = [
   35858,
   // Explicit Studio publication/contribution consent; not an iframe permission.
   ...studioSigningKinds,
+  ...walletSigningKinds,
 ];
 export const defaultSignerRelays = ['wss://relay.napplet.soy'];
 // A client connection budget, not a NIP-46 protocol limit. Keep saved sessions
@@ -104,6 +107,10 @@ export type CreatorSigner = {
   getPublicKey(): Promise<string>;
   signEvent(event: EventTemplate): Promise<SignedEvent>;
   close(): Promise<void>;
+  nip44?: {
+    encrypt(pubkey: string, plaintext: string): Promise<string>;
+    decrypt(pubkey: string, ciphertext: string): Promise<string>;
+  };
 };
 export function checkPubkey(pubkey: string, network: Network) {
   if (!/^[a-f0-9]{64}$/.test(pubkey))
@@ -382,6 +389,11 @@ async function openSession(
       const name =
         typeof options.name === 'function' ? options.name(remote.clientPubkey) : options.name;
       const metadata = name ? { name, url: options.url ?? 'https://napplet.soy' } : undefined;
+      const permissions = [
+        'get_public_key',
+        ...NostrConnectSigner.buildSigningPermissions(kinds),
+        ...(kinds.includes(17375) ? ['nip44_encrypt', 'nip44_decrypt'] : []),
+      ];
       if (credential.type === 'pairing') {
         const pairing = options as PairingOptions;
         await bounded(async () => {
@@ -392,18 +404,14 @@ async function openSession(
             remote!.getNostrConnectURI({
               name: name ?? 'Napplet Space',
               url: pairing.url ?? 'https://napplet.soy',
-              permissions: ['get_public_key', ...NostrConnectSigner.buildSigningPermissions(kinds)],
+              permissions,
             }),
           );
           await waiting;
         });
       } else {
         const ack = await bounded(() =>
-          remote!.connectNamed(
-            credential.secret,
-            ['get_public_key', ...NostrConnectSigner.buildSigningPermissions(kinds)],
-            metadata,
-          ),
+          remote!.connectNamed(credential.secret, permissions, metadata),
         );
         if (ack !== 'ack' && ack !== credential.secret)
           throw new AccountError(
@@ -421,6 +429,10 @@ async function openSession(
         'The signer now represents a different creator. Connect that account explicitly.',
       );
     const signer: CreatorSigner = {
+      nip44: {
+        encrypt: (peer, text) => bounded(() => (remote ?? local).nip44!.encrypt(peer, text)),
+        decrypt: (peer, text) => bounded(() => (remote ?? local).nip44!.decrypt(peer, text)),
+      },
       getPublicKey: async () => {
         if (closed) throw new AccountError('SIGNER_CLOSED', 'Signer session closed.');
         return pubkey;

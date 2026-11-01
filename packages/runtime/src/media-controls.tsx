@@ -16,6 +16,11 @@ export function MediaControls({ media }: { media: NappletMedia }) {
           </div>
           <button
             type="button"
+            disabled={
+              !s.actions.includes(
+                s.status === 'playing' || s.status === 'buffering' ? 'pause' : 'play',
+              )
+            }
             aria-label={`${s.status === 'playing' || s.status === 'buffering' ? 'Pause' : 'Play'} audio: ${s.title}`}
             onClick={() =>
               media.command(
@@ -28,6 +33,7 @@ export function MediaControls({ media }: { media: NappletMedia }) {
           </button>
           <button
             type="button"
+            disabled={!s.actions.includes('stop')}
             aria-label={`Stop audio: ${s.title}`}
             onClick={() => media.command(s.id, 'stop')}
           >
@@ -38,6 +44,7 @@ export function MediaControls({ media }: { media: NappletMedia }) {
             <input
               aria-label={`Audio volume: ${s.title}`}
               type="range"
+              disabled={!s.actions.includes('volume')}
               min="0"
               max="1"
               step="0.05"

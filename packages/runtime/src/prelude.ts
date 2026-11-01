@@ -17,7 +17,9 @@ export const SHELL_PRELUDE = `
   });
   window.napplet.shell = Object.freeze({
     ready: () => ready,
-    supports: domain => !!environment?.capabilities?.domains?.includes(domain),
+    supports: domain => typeof domain === 'string' &&
+      Object.prototype.hasOwnProperty.call(window.napplet, domain) &&
+      window.napplet[domain] !== null && typeof window.napplet[domain] === 'object',
     get services() { return environment?.services || []; },
     onReady: handler => {
       if (environment) queueMicrotask(() => handler(environment));
@@ -28,7 +30,7 @@ export const SHELL_PRELUDE = `
   window.parent.postMessage({type: 'shell.ready'}, '*');
 })();`;
 
-/** The same pinned upstream shim and mandatory shell bootstrap in every host. */
+/** The pinned upstream shim plus optional environment discovery in every host. */
 export function nappletPrelude(shim: string, declaration?: { schema?: unknown }) {
   let schema = null;
   try {

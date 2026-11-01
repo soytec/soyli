@@ -9,15 +9,25 @@ const metadataSchema = z.object({
   duration: z.number().nonnegative().finite().optional(),
   artwork: z.unknown().optional(),
 });
+const mediaAction = z.enum(['play', 'pause', 'stop', 'next', 'prev', 'seek', 'volume']);
+const capabilitiesSchema = z.array(mediaAction).max(7);
+const stateSchema = z.object({
+  status: z.enum(['playing', 'paused', 'stopped', 'buffering']),
+  position: z.number().finite().nonnegative().optional(),
+  duration: z.number().finite().nonnegative().optional(),
+  volume: z.number().finite().min(0).max(1).optional(),
+});
 const createSchema = z.object({
   id: z.string().min(1).max(128),
   owner: z.enum(['shell', 'napplet']),
   source: z
-    .object({ url: z.string().max(4096), mimeType: z.string().max(100).optional() })
+    .object({ url: z.string().max(4096).optional(), mimeType: z.string().max(100).optional() })
+    .passthrough()
     .optional(),
   metadata: metadataSchema.optional(),
   autoplay: z.boolean().optional(),
   live: z.boolean().optional(),
+  capabilities: capabilitiesSchema.optional(),
 });
 const actions = ['play', 'pause', 'stop', 'volume'];
 type Status = 'playing' | 'paused' | 'stopped' | 'buffering';
@@ -26,20 +36,26 @@ export type AudioView = {
   title: string;
   status: Status;
   volume: number;
+  actions: string[];
   error?: string;
 };
-type Session = AudioView & {
+type SessionBase = AudioView & {
+  cleanup: () => void;
+  pause: () => void;
+};
+type ShellSession = SessionBase & {
+  owner: 'shell';
   audio: HTMLAudioElement;
   source: string;
   live: boolean;
   revision: number;
-  cleanup: () => void;
-  pause: () => void;
   cancelPrompt?: () => void;
 };
+type NappletSession = SessionBase & { owner: 'napplet' };
+type Session = ShellSession | NappletSession;
 let focused: { pause: () => void } | undefined;
 
-/** NAP-MEDIA shell-owned audio. All objects, URLs and callbacks belong to one frame/account. */
+/** NAP-MEDIA sessions. Playback state belongs to its declared owner; IDs are frame/account scoped. */
 export class NappletMedia {
   private sessions = new Map<string, Session>();
   private pending = new Set<string>();
@@ -64,16 +80,19 @@ export class NappletMedia {
   };
   getSnapshot = () => this.snapshot;
   private changed() {
-    this.snapshot = [...this.sessions.values()].map(({ id, title, status, volume, error }) => ({
-      id,
-      title,
-      status,
-      volume,
-      error,
-    }));
+    this.snapshot = [...this.sessions.values()].map(
+      ({ id, title, status, volume, actions, error }) => ({
+        id,
+        title,
+        status,
+        volume,
+        actions: [...actions],
+        error,
+      }),
+    );
     this.listeners.forEach((fn) => fn());
   }
-  private sendState(session: Session) {
+  private sendState(session: ShellSession) {
     if (!this.alive || !this.sessions.has(session.id)) return;
     session.volume = session.audio.volume;
     this.options.send({
@@ -88,6 +107,17 @@ export class NappletMedia {
     });
     this.changed();
   }
+  private controls(session: Session) {
+    this.options.send({
+      type: 'media.controls',
+      sessionId: session.id,
+      controls: actions.filter((action) => session.actions.includes(action)),
+    });
+  }
+  private focus(session: Session) {
+    if (focused && focused !== session) focused.pause();
+    focused = session;
+  }
   private async create(message: Record<string, unknown>) {
     const id = message.id;
     if (typeof id !== 'string' || !id || id.length > 128 || this.pending.has(id)) return;
@@ -101,8 +131,32 @@ export class NappletMedia {
     this.pending.add(id);
     try {
       const input = createSchema.parse(message);
-      if (input.owner !== 'shell') throw new Error('unsupported owner mode');
+      if (input.owner === 'napplet') {
+        // Source/context are advisory. Never construct a media element or fetch
+        // a source on behalf of a napplet-owned session.
+        const session: NappletSession = {
+          owner: 'napplet',
+          id: crypto.randomUUID(),
+          title: input.metadata?.title || 'Audio',
+          status: 'stopped',
+          volume: 1,
+          actions: [...new Set(input.capabilities ?? [])],
+          cleanup: () => {},
+          pause: () =>
+            this.command(session.id, session.actions.includes('pause') ? 'pause' : 'stop'),
+        };
+        this.sessions.set(session.id, session);
+        result({ sessionId: session.id, owner: 'napplet' });
+        setTimeout(() => {
+          if (!this.alive || !this.sessions.has(session.id)) return;
+          this.controls(session);
+          if (input.autoplay) this.command(session.id, 'play');
+        }, 0);
+        this.changed();
+        return;
+      }
       if (!input.source) throw new Error('missing source');
+      if (!input.source.url) throw new Error('unsupported source');
       const url = resourceUrl(input.source.url);
       if (url.protocol !== 'https:' || url.username || url.password || url.hash)
         throw new Error('source blocked');
@@ -114,7 +168,8 @@ export class NappletMedia {
       const audio = (this.options.audio ?? (() => new Audio()))();
       audio.preload = 'none';
       audio.src = url.href;
-      const session: Session = {
+      const session: ShellSession = {
+        owner: 'shell',
         id: crypto.randomUUID(),
         title: input.metadata?.title || 'Audio',
         audio,
@@ -122,9 +177,10 @@ export class NappletMedia {
         live: !!input.live,
         status: 'stopped',
         volume: audio.volume,
+        actions: [...actions],
         revision: 0,
         cleanup: () => {},
-        pause: () => {},
+        pause: () => this.command(session.id, 'pause'),
       };
       const events = new AbortController();
       const state = (status: Status) => {
@@ -184,7 +240,7 @@ export class NappletMedia {
       setTimeout(() => {
         if (!this.alive || !this.sessions.has(session.id)) return;
         this.options.send({ type: 'media.capabilities', sessionId: session.id, actions });
-        this.options.send({ type: 'media.controls', sessionId: session.id, controls: actions });
+        this.controls(session);
         this.sendState(session);
         if (input.autoplay) void this.play(session);
       }, 0);
@@ -202,16 +258,12 @@ export class NappletMedia {
       this.pending.delete(id);
     }
   }
-  private async play(session: Session, activated = false) {
+  private async play(session: ShellSession, activated = false) {
     if (!this.alive || !this.sessions.has(session.id)) return;
     session.cancelPrompt?.();
     session.cancelPrompt = undefined;
     const revision = ++session.revision;
-    if (focused && focused !== session) focused.pause();
-    // Store a stable focus owner so sessions in other iframe hosts also pause.
-    const owner = session as Session & { pause: () => void };
-    owner.pause = () => this.command(session.id, 'pause');
-    focused = owner;
+    this.focus(session);
     session.error = undefined;
     session.status = 'buffering';
     if (!session.audio.getAttribute('src') || session.audio.error) {
@@ -242,6 +294,24 @@ export class NappletMedia {
   command = (id: string, action: string, value?: unknown) => {
     const session = this.sessions.get(id);
     if (!session || !this.alive) return;
+    if (!session.actions.includes(action)) return;
+    if (
+      action === 'volume' &&
+      (typeof value !== 'number' || !Number.isFinite(value) || value < 0 || value > 1)
+    )
+      return;
+    if (action === 'seek' && (typeof value !== 'number' || !Number.isFinite(value) || value < 0))
+      return;
+    if (session.owner === 'napplet') {
+      this.options.send({
+        type: 'media.command',
+        sessionId: id,
+        action,
+        ...(['volume', 'seek'].includes(action) ? { value } : {}),
+      });
+      // Commands are requests. Only the playback owner may report the new state.
+      return;
+    }
     if (action === 'play') {
       void this.play(session);
       return;
@@ -272,8 +342,28 @@ export class NappletMedia {
     }
     const session = this.sessions.get(String(message.sessionId));
     if (!session) return;
-    if (message.type === 'media.command')
+    if (message.type === 'media.command' && session.owner === 'shell')
       this.command(session.id, String(message.action), message.value);
+    if (message.type === 'media.state' && session.owner === 'napplet') {
+      const state = stateSchema.safeParse(message);
+      if (!state.success) return;
+      const playing = (status: Status) => status === 'playing' || status === 'buffering';
+      if (playing(state.data.status) && !playing(session.status)) this.focus(session);
+      if (!playing(state.data.status) && focused === session) focused = undefined;
+      const changed =
+        session.status !== state.data.status ||
+        (state.data.volume !== undefined && session.volume !== state.data.volume);
+      session.status = state.data.status;
+      if (state.data.volume !== undefined) session.volume = state.data.volume;
+      if (changed) this.changed();
+    }
+    if (message.type === 'media.capabilities' && session.owner === 'napplet') {
+      const capabilities = capabilitiesSchema.safeParse(message.actions);
+      if (!capabilities.success) return;
+      session.actions = [...new Set(capabilities.data)];
+      this.controls(session);
+      this.changed();
+    }
     if (message.type === 'media.session.update') {
       const metadata = metadataSchema.safeParse(message.metadata);
       if (metadata.success && metadata.data.title !== undefined) {
@@ -283,14 +373,21 @@ export class NappletMedia {
     }
     if (message.type === 'media.session.destroy') {
       this.sessions.delete(session.id);
-      session.revision++;
+      if (session.owner === 'shell') session.revision++;
       session.cleanup();
       if (focused === session) focused = undefined;
       this.changed();
     }
-    // The shell owns state and capabilities. Forged reports never change them.
+    // Reports for shell-owned sessions and commands from a napplet to its own
+    // napplet-owned session never reverse the declared ownership.
   }
   close() {
+    if (!this.alive) return;
+    // Account retirement can leave the iframe running. Ask cooperating owners
+    // to stop before their old account endpoint is revoked.
+    for (const session of this.sessions.values())
+      if (session.owner === 'napplet')
+        this.command(session.id, session.actions.includes('stop') ? 'stop' : 'pause');
     this.alive = false;
     this.lifetime.abort();
     for (const session of this.sessions.values()) {

@@ -163,11 +163,13 @@ export async function checkProject(directory: string, network: Network) {
     network,
     project.creator?.pubkey ?? developmentAuthor,
   );
-  const { profile, browser, preview } = await checkPublication(contents);
+  const { profile, browser, coverage, warnings, preview } = await checkPublication(contents);
   return {
     status: 'checked',
     profile,
     browser,
+    coverage,
+    warnings,
     previewBytes: preview.length,
     artifactHash: plan.artifactHash,
     sourceBytes: plan.sourceBytes,

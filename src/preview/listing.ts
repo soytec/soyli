@@ -13,6 +13,7 @@ import {
 import { regularFile } from '../../packages/publish/src/project';
 import { MAX_PREVIEW_BYTES } from '../../packages/protocol/src/preview';
 import { encodeAddress, sha256 } from '../../packages/protocol/src';
+import { videoMatchesBuild } from '../../packages/publish/src/media-review';
 import { missingDomains } from '../../packages/runtime/src/capabilities';
 import type { Network } from '../../packages/identity/src/signer';
 import { builtConfiguration, builtRequirements } from '../../packages/publish/src/artifact';
@@ -139,7 +140,9 @@ export async function listingPreview(
         durationMs: selected.durationMs,
         bytes: selected.bytes.length,
         file: project.preview.video.file,
-        stale: artifact?.hash !== project.preview.video.artifactHash,
+        stale:
+          !artifact ||
+          !(await videoMatchesBuild(project.preview.video, artifact.hash, selected.bytes)),
       };
       if (video.stale)
         warnings.push(

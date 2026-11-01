@@ -152,6 +152,11 @@ test('shipped tooling guidance follows soyLI setup and allows backend and scenar
   expect(build).toContain('soyli setup');
   expect(build).toContain('`backend/**`');
   expect(build).toContain('`tests/**`');
+  expect(build).toContain('independent shell');
+  expect(files['docs/napplet-space.md']).toContain("owner: 'napplet'");
+  expect(files['docs/napplet-space.md']).toContain('Do not continue unregistered sound');
+  expect(files['docs/napplet-space.md']).toContain('without inputs, interaction');
+  expect(files['docs/napplet-space.md']).not.toContain('Streams stop at 128 MiB');
   for (const path of ['README.md', 'AGENTS.md'])
     expect(files[path]).not.toContain('npx skills add napplet/napplet');
   expect(files['docs/napplet-backend.md']).toContain('never force-add');

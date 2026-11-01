@@ -9,6 +9,7 @@ import { remixSchema } from '../../protocol/src/remix';
 import type { Network } from '../../identity/src/signer';
 import { PublishError, targetsSchema, intentSchema } from './config';
 import { MAX_SOURCE_FILES, MAX_PUBLICATION_JOURNAL_BYTES } from './limits';
+import { checkReportSchema } from './check-report';
 import {
   MANIFEST_PRESENTATION_PROFILE,
   manifestScreenshots,
@@ -111,8 +112,10 @@ export const jobSchema = z
       .int()
       .nonnegative()
       .max(50 * 1024 * 1024),
-    check: z.object({ profile: z.string().max(80), browser: z.string().max(80) }).strict(),
+    check: checkReportSchema,
     releaseRefs: z.record(z.string().regex(/^refs\/tags\/release-[a-f0-9]{16}$/), commit),
+    appliedStatuses: z.array(eventSchema).max(100).optional(),
+    appliedBranch: z.string().min(1).max(1024).optional(),
     source: z.object({ announcement: eventSchema, state: eventSchema }).optional(),
     snapshot: eventSchema.optional(),
     current: eventSchema.optional(),

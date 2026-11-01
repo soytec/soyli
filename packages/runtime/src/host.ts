@@ -83,7 +83,7 @@ export function attachNappletHost(options: HostOptions) {
   const source = options.frame.contentWindow;
   const dataPolicy = appDataPolicy(options.identity, options.actionRelays ?? options.relays);
   let alive = true,
-    initialized = false,
+    environmentSent = false,
     calls = 0,
     windowStart = Date.now();
   // Frame budgets and concurrency survive account changes.
@@ -94,7 +94,7 @@ export function attachNappletHost(options: HostOptions) {
     if (alive) source?.postMessage(message, '*');
   };
   const intentEndpoint = options.intent?.workspace.attach(options.intent.catalogId, send);
-  // The iframe/handshake outlive account scopes. Each request captures its scope;
+  // The verified frame outlives account scopes. Each request captures its scope;
   // retiring it settles promises and prevents delayed results reaching a new user.
   const createAccount = (pubkey: string | null) => {
     let active = true;
@@ -513,6 +513,8 @@ export function attachNappletHost(options: HostOptions) {
     configWindow = Date.now();
   let mediaCalls = 0,
     mediaWindow = Date.now();
+  let mediaReports = 0,
+    mediaReportWindow = Date.now();
   let rtcCalls = 0,
     rtcBytes = 0,
     rtcWindow = Date.now();
@@ -522,8 +524,8 @@ export function attachNappletHost(options: HostOptions) {
     if (!parsed.success) return;
     const message = parsed.data;
     if (message.type === 'shell.ready') {
-      if (initialized) return;
-      initialized = true;
+      if (environmentSent) return;
+      environmentSent = true;
       send({
         type: 'shell.init',
         capabilities: {
@@ -537,31 +539,42 @@ export function attachNappletHost(options: HostOptions) {
       keys.ready();
       return;
     }
-    if (initialized && message.type.startsWith('keys.') && HOST_REQUESTS.has(message.type)) {
+    if (message.type.startsWith('keys.') && HOST_REQUESTS.has(message.type)) {
       keys.handle(message);
       return;
     }
     if (
-      initialized &&
       [
         'media.session.create',
         'media.session.update',
         'media.session.destroy',
         'media.command',
+        'media.state',
+        'media.capabilities',
       ].includes(message.type)
     ) {
-      if (Date.now() - mediaWindow >= 60000) {
-        mediaWindow = Date.now();
-        mediaCalls = 0;
-      }
-      if (++mediaCalls > 360) {
-        if (message.type === 'media.session.create' && message.id)
-          send({
-            type: 'media.session.create.result',
-            id: message.id,
-            error: 'session limit exceeded',
-          });
-        return;
+      // Playback reports cannot consume the command/lifecycle budget and prevent
+      // pause, destruction or creation of a replacement session.
+      if (message.type === 'media.state') {
+        if (Date.now() - mediaReportWindow >= 1000) {
+          mediaReportWindow = Date.now();
+          mediaReports = 0;
+        }
+        if (++mediaReports > 120) return;
+      } else {
+        if (Date.now() - mediaWindow >= 60000) {
+          mediaWindow = Date.now();
+          mediaCalls = 0;
+        }
+        if (++mediaCalls > 360) {
+          if (message.type === 'media.session.create' && message.id)
+            send({
+              type: 'media.session.create.result',
+              id: message.id,
+              error: 'session limit exceeded',
+            });
+          return;
+        }
       }
       try {
         if (JSON.stringify(message).length <= 16384) account.media.handle(message);
@@ -570,7 +583,7 @@ export function attachNappletHost(options: HostOptions) {
       }
       return;
     }
-    if (initialized && message.type.startsWith('config.') && HOST_REQUESTS.has(message.type)) {
+    if (message.type.startsWith('config.') && HOST_REQUESTS.has(message.type)) {
       if (Date.now() - configWindow >= 60000) {
         configWindow = Date.now();
         configCalls = 0;
@@ -583,7 +596,9 @@ export function attachNappletHost(options: HostOptions) {
       }
       return;
     }
-    if (!initialized || !message.id || !HOST_REQUESTS.has(message.type)) return;
+    // Sender authority was bound before the iframe could execute. SHELL is an
+    // optional environment exchange, not an authorization or readiness gate.
+    if (!message.id || !HOST_REQUESTS.has(message.type)) return;
     const scope = account;
     // NAP-IDENTITY requires this basic snapshot to succeed without an error
     // field, even when asynchronous services have exhausted their quota.
@@ -697,7 +712,7 @@ export function attachNappletHost(options: HostOptions) {
       .finally(() => scope.requests.delete(failure));
   };
   const unsubscribeTheme = options.theme?.subscribe(() => {
-    if (initialized) send({ type: 'theme.changed', theme: options.theme!.get() });
+    send({ type: 'theme.changed', theme: options.theme!.get() });
   });
   window.addEventListener('message', listener);
   return {
@@ -707,7 +722,7 @@ export function attachNappletHost(options: HostOptions) {
       account.close('Identity changed');
       options.files([]);
       account = createAccount(pubkey);
-      if (initialized) send({ type: 'identity.changed', pubkey: pubkey ?? '' });
+      send({ type: 'identity.changed', pubkey: pubkey ?? '' });
       config.updateIdentity(pubkey);
     },
     close() {

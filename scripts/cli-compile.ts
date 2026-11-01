@@ -40,7 +40,10 @@ export async function compileCli(
         setup(build) {
           // Keep the shipped helper text separate from its executable module identity.
           build.onResolve(
-            { filter: /\/(gamepad|app-data|app-data-contract|handler|handler-types)\.ts\?raw$/ },
+            {
+              filter:
+                /\/(gamepad|app-data|app-data-contract|handler|handler-types|coordinated-audio)\.ts\?raw$/,
+            },
             ({ path }) => ({
               path: resolve(root, 'src', path.slice(0, -4)),
               namespace: 'creator-source',

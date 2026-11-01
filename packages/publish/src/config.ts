@@ -186,6 +186,15 @@ export const projectSchema = z
           .object({
             file: z.string().min(1).max(200),
             artifactHash: z.string().regex(/^[a-f0-9]{64}$/),
+            // Explicit approval to reuse these exact clip bytes for one newer build.
+            // artifactHash continues to identify the build originally recorded.
+            reviewedFor: z
+              .object({
+                artifactHash: z.string().regex(/^[a-f0-9]{64}$/),
+                videoHash: z.string().regex(/^[a-f0-9]{64}$/),
+              })
+              .strict()
+              .optional(),
           })
           .strict()
           .optional(),

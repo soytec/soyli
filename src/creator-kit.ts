@@ -26,6 +26,7 @@ import minicraftManifest from '../packages/dynamic-backends/fixtures/minicraft/b
 import minicraftSchemas from '../packages/dynamic-backends/fixtures/minicraft/schemas.json';
 import sharedDataGuide from '../docs/SHARED-DATA.md' with { type: 'text' };
 import outboxGuide from '../docs/OUTBOX.md' with { type: 'text' };
+import coordinatedAudio from '../docs/examples/coordinated-audio.ts?raw' with { type: 'text' };
 import appDataHelper from '../packages/app-data/src/app-data.ts?raw' with { type: 'text' };
 import appDataContract from '../packages/app-data/src/app-data-contract.ts?raw' with { type: 'text' };
 import multiplayerSync from '../templates/multiplayer-sync.ts.txt' with { type: 'text' };
@@ -147,7 +148,8 @@ and report missing coverage honestly. Never invent a portrait recording option.
   For an interaction recipe set preview.recording.actions: timed click (x/y in a
   960 × 600 viewport), keyDown or keyUp with atMs relative to recording start.
   preview.recording.durationMs is 2000–8000; startMs is 0–10000 after normal startup.
-  A changed build needs a fresh clip, or remove preview.video to publish only a PNG.
+  A changed build needs a fresh clip or explicit media review in Studio's Publish
+  update flow; remove preview.video to publish only a PNG.
 - soyli publish --dry-run inspects source and destinations;
   soyli publish requires a committed clean tree, builds dist/index.html projects,
   then checks the artifact and publishes. Preview/review opening never runs build scripts.
@@ -260,6 +262,10 @@ soyli record produces 960 × 600 video; the recorder may add a brief final frame
 Publishing freezes its bytes and a signed preview hash/MIME on the napplet manifest,
 retaining a screenshot for clients that do not display video. Never fabricate a clip
 or change preview.video.artifactHash to bypass the stale-build check.
+Studio can retain a previous release's cover and clip after explicit review. It
+keeps the original artifactHash and records reviewedFor with the exact new build
+and clip hashes. Do not invent this approval; the user reviews the retained media
+before signing. Changing the build or clip invalidates it. Re-recording replaces it.
 The local preview setting is authoring configuration, not a new Nostr manifest tag.
 
 Readable routes are a one-time website claim, not an automatic publish step.
@@ -315,8 +321,13 @@ One remix supports both paths, in either order:
 - soyli proposals --json gives agent-readable proposals and exact revisions.
 - soyli merge <id> --revision <event-id> --target <reviewed-HEAD> merges locally.
   Merge on the upstream target branch. soyli push publishes that branch and
-  confirmed applied status, preserving other refs; soyli publish releases the
-  napplet separately. A failed push keeps its journal; rerun it from the same tip.
+  confirmed applied status, preserving other refs. soyli publish also marks
+  included proposals merged after hosted Git delivery, so a release needs no
+  separate push. Linked Git remains read-only: merged statuses require the
+  reviewed branch's signed and served tips to equal the release commit. Resume
+  rechecks that saved branch; retaining the commit under a tag is not enough.
+  Source URL relay hints are preserved. Retry a failed release with publish
+  --resume; retry a failed push from the same tip.
 Use the same selected revision for testing and merge. A changed target or proposal
 requires another review. Ordinary Git/ngit remain available for branches, patches,
 conflicts and maintainer layouts outside this simple creator workflow.
@@ -408,6 +419,16 @@ the napplet or weaken checks to make the report green. Keep the conformance resu
 soyli check result and real interaction evidence separate. The pinned suite can
 skip manifest, wire and lifecycle cases; that is unmeasured coverage.
 
+soyli check reports startup separately from interaction. It replays configured
+preview.recording inputs even when not recording a video; without inputs, interaction
+is explicitly not measured. Inspect coverage and warnings in its result. Inputs
+executed without errors do not prove gameplay correctness, coordinated sound or
+compatibility with another shell. Test core behavior and optional-domain denial,
+including missing MEDIA and unsupported owner modes. Test the same final artifact
+in an independent shell such as Paja; record its version and actual failures or
+unavailable checks. Do not replace the artifact, inject Soy helpers or wrap a current
+manifest in a legacy event and call that current-manifest interoperability.
+
 For optional capabilities, wrap the SDK call itself in try/await/catch; attaching
 .catch to its result alone misses synchronous exceptions. If an optional save fails,
 keep the app usable and explain that progress was not saved. Do not silently treat
@@ -458,7 +479,7 @@ around a lookup failure or bypass the iframe's network restrictions.
 Check injected domain availability before implementing a capability-dependent feature:
 an SDK export or passing upstream reference-shell test does not mean soyLI or the
 deployed website implements that domain. Local and deployed versions may differ.
-soyLI 0.8.0 adds NAP-MEDIA shell-owned audio/stream playback. The website needs the
+The shared runtime supports NAP-MEDIA shell-owned and napplet-owned audio. The website needs the
 matching deployment; upgrading one does not upgrade the other. Use the upstream SDK
 media.createSession with owner: 'shell', source.url (public HTTPS), optional audio
 metadata, live: true for radio, and autoplay: false when showing your own play button.
@@ -466,13 +487,36 @@ Wait for the result's canonical sessionId, subscribe with onState/onCapabilities
 then sendCommand for play/pause/stop/volume. Destroy sessions when leaving the view.
 MP3, Ogg audio and WAV are supported subject to browser codecs. The host handles
 streaming, source checks and gesture prompts. Only use advertised controls; no seek,
-playlists/HLS/DASH, video, napplet-owned sessions or hash/Nostr-only source resolution
+playlists/HLS/DASH, video or hash/Nostr-only source resolution
 is implemented. Nostr hints and session context are metadata, not network authority.
 Artwork is not loaded by this audio host. Four sessions per frame are allowed; one
-plays at a time. Streams stop at 128 MiB or two hours and close with the napplet.
-Small embedded data/blob audio and Web Audio are separate browser features, subject
-to user activation and codec support. Do not work around missing media support by
+plays at a time under cooperative session control. Host streams close with the napplet.
+
+Embedded data/blob audio and synthesized Web Audio must also coordinate through
+NAP-MEDIA: createSession({ owner: 'napplet', capabilities: ['play', 'pause', 'stop',
+'volume'], metadata: { title: 'Game sound', mediaType: 'audio' } }). Advertise only
+controls you implement. Wait for the canonical sessionId, attach
+onCommand(sessionId, (action, value) => { /* operate local audio */ }), and
+reportState with the actual status and volume. Implement commands against your
+local audio graph/element; do not sendCommand to your own napplet-owned session.
+Report state on changes, and reportCapabilities when supported controls change.
+Pause/stop must silence all output, including effects; volume must affect all output.
+Keep one session for the game's audio graph, not one per sound effect. Release the
+graph, listeners and session on teardown. Suspend audio on identity change and
+recreate the session if the current account scope has retired it.
+
+AudioContext resume/local playback still needs a user gesture. A host play request
+does not guarantee browser activation inside the frame; retain an in-app sound
+button and report the actual paused state when activation is refused. Handle missing
+media and createSession rejection: a game should remain playable silently; a media
+app should explain the unsupported mode. Do not continue unregistered sound as a
+fallback. A source field on a napplet-owned session is advisory, not permission for
+remote URLs. Test two napplets playing in turn and host pause/stop/volume controls.
+Do not work around missing media support by
 adding direct remote URLs, fetch, an unbounded resource download or a looser CSP.
+Use docs/examples/coordinated-audio.ts for optional Web Audio: pass the SDK media
+wrapper after checking the injected domain, route every output through its gain,
+and dispose it on teardown. Ordinary input must not override a host pause.
 For clients without media, keep a clear unavailable state or user-confirmed link
 fallback; if playback is the core purpose, declare media required and report the
 host gap. Test the actual play/pause/volume flow, not only build/startup or relay lookup.
@@ -548,6 +592,7 @@ export function creatorSkills() {
     'docs/examples/minicraft/schemas.json': JSON.stringify(minicraftSchemas, null, 2) + '\n',
     'docs/napplet-data.md': sharedDataGuide,
     'docs/examples/app-data.ts': appDataHelper,
+    'docs/examples/coordinated-audio.ts': coordinatedAudio,
     'docs/examples/app-data-contract.ts': appDataContract,
     'docs/napplet-outbox.md': outboxGuide,
     'docs/napplet-actions.md': actionsGuide,

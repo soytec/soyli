@@ -1,3 +1,4 @@
+import { prepareAppliedStatuses, deliverAppliedStatuses } from './applied';
 import { ASSET_LOCK, parseAssets } from '../../assets/src';
 import { DiagnosticError } from '../../diagnostics/src';
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
@@ -749,36 +750,6 @@ export async function pushSource(
             'Upstream state has unsupported refs; use ngit without changing that state through soyLI.',
           );
         for (const [name] of refs) await sourceGit(options.directory, ['check-ref-format', name]);
-        const proposals = await readProposals(client, repository);
-        const included: Proposal[] = [];
-        for (const proposal of proposals.filter(
-          (p) => ['open', 'draft'].includes(p.status) && p.head && !p.patch,
-        )) {
-          // A missing object means it is not included. Other Git failures retain
-          // their causes rather than being misclassified as unrelated proposals.
-          try {
-            await sourceGit(options.directory, ['cat-file', '-e', `${proposal.head}^{commit}`]);
-          } catch (cause) {
-            if (cause instanceof DiagnosticError && cause.context.exitCode === 128) continue;
-            throw cause;
-          }
-          try {
-            await sourceGit(options.directory, [
-              'merge-base',
-              '--is-ancestor',
-              proposal.head!,
-              commit,
-            ]);
-          } catch (cause) {
-            if (cause instanceof DiagnosticError && cause.context.exitCode === 1) continue;
-            throw cause;
-          }
-          const declared =
-            tag(proposal.revision, 'target-branch') ?? tag(proposal.root, 'target-branch');
-          const defaultBranch = tag(previous, 'HEAD')?.replace(/^ref: refs\/heads\//, '');
-          if ((declared ?? defaultBranch) !== branch) continue;
-          included.push(proposal);
-        }
         signer = await options.accounts!.signer({
           signal: options.signal,
           onAuth: options.onAuth,
@@ -793,27 +764,16 @@ export async function pushSource(
           content: previous.content,
           tags: previous.tags.map((t) => (t[0] === ref ? [ref, commit] : t)),
         });
-        const statuses: SignedEvent[] = [];
-        for (const proposal of included)
-          statuses.push(
-            await signExact(signer, account.pubkey, {
-              kind: 1631,
-              created_at: Math.max(
-                now,
-                (proposal.statusEvent?.created_at ?? proposal.revision.created_at) + 1,
-              ),
-              content: 'Merged and published in Git.',
-              tags: [
-                ['e', proposal.root.id, '', 'root'],
-                ['e', proposal.revision.id, '', 'reply'],
-                ['a', repository.address],
-                ['p', proposal.root.pubkey],
-                ['p', repository.pubkey],
-                ['merge-commit', commit],
-                ['r', commit],
-              ],
-            }),
-          );
+        const statuses = await prepareAppliedStatuses({
+          directory: options.directory,
+          client,
+          repository,
+          previous,
+          branch,
+          commit,
+          signer,
+          pubkey: account.pubkey,
+        });
         saved = {
           version: 1,
           network: options.network,
@@ -859,56 +819,16 @@ export async function pushSource(
         signal: options.signal,
       });
       await options.checkpoint?.('git');
-      const inbox = new ProtocolClient(() => saved.relays);
-      const supersededProposals: string[] = [];
-      try {
-        for (const input of saved.statuses) {
-          const event = verifiedEvent(input);
-          if (
-            event.pubkey !== account.pubkey ||
-            event.kind !== 1631 ||
-            tag(event, 'a') !== repository.address ||
-            tag(event, 'merge-commit') !== commit
-          )
-            throw new Error('Saved applied status mismatch.');
-          const root = event.tags.find((t) => t[0] === 'e' && t[3] === 'root')?.[1];
-          const reviewed = event.tags.find((t) => t[0] === 'e' && t[3] === 'reply')?.[1];
-          if (!root || !reviewed) throw new Error('Saved applied status has no reviewed revision.');
-          // Git may already have been published on a previous attempt. A newer
-          // contribution must not be closed by that attempt's saved acceptance.
-          const proposal = (await readProposals(inbox, repository, root)).find(
-            (p) => p.root.id === root,
-          );
-          if (!proposal)
-            throw new Error('Proposal unavailable while checking its applied revision.');
-          if (proposal.revision.id !== reviewed) {
-            supersededProposals.push(root);
-            continue;
-          }
-          await inbox.publish(event, [], options.signal);
-          if (
-            !(await inbox.query([{ ids: [event.id], limit: 1 }], [], options.signal)).some(
-              (e) => e.id === event.id,
-            )
-          )
-            throw new Error('Applied status was acknowledged but is not queryable.');
-        }
-        await options.checkpoint?.('status');
-      } catch (cause) {
-        throw new DiagnosticError(
-          'PROPOSAL_STATUS_UNCONFIRMED',
-          'Git was published but proposal status is not confirmed.',
-          {
-            operation: 'confirm applied proposal status',
-            target: repository.address,
-            cause,
-            recovery:
-              'Rerun soyli push from the same commit to deliver the saved applied events. Do not repeat the merge.',
-          },
-        );
-      } finally {
-        inbox.close();
-      }
+      const supersededProposals = await deliverAppliedStatuses({
+        repository,
+        commit,
+        pubkey: account.pubkey,
+        statuses: saved.statuses,
+        signal: options.signal,
+        recovery:
+          'Rerun soyli push from the same commit to deliver the saved applied events. Do not repeat the merge.',
+      });
+      await options.checkpoint?.('status');
       saved.supersededProposals = supersededProposals;
       saved.done = true;
       await atomic(path, saved);

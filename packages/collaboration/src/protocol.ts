@@ -179,7 +179,7 @@ export async function readRepositoryState(client: ProtocolClient, repo: Reposito
   )[0];
   return { state, authors: [...new Set(authors)] };
 }
-function repositoryFromEvent(
+export function repositoryFromEvent(
   ref: ReturnType<typeof repositoryRef>,
   event: SignedEvent,
 ): Repository {

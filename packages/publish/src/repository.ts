@@ -267,11 +267,17 @@ export async function verifyReleaseReachable(input: {
   repository: LinkedRepository;
   state: SignedEvent | null;
   commit: string;
+  /** Restrict proof to the reviewed proposal target, rather than any release ref. */
+  ref?: string;
   lsRemote?: LsRemote;
 }) {
   const { commit, directory } = input;
   const refs = (input.state?.tags ?? []).filter(
-    (t) => t[0].startsWith('refs/') && t.length === 2 && commitPattern.test(t[1]),
+    (t) =>
+      t[0].startsWith('refs/') &&
+      (!input.ref || t[0] === input.ref) &&
+      t.length === 2 &&
+      commitPattern.test(t[1]),
   );
   const checked: string[] = [];
   const containing: [string, string][] = [];

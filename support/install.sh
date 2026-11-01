@@ -3,7 +3,7 @@ set -eu
 
 # napplet soyLI creator CLI. Inspect this script before running it if you prefer.
 # Downloads are immutable by version; the archive is verified before extraction.
-version=0.31.1
+version=0.31.4
 # The updater uses this bundled installer with an explicitly checked stable release.
 version=${NAPPLET_RELEASE_VERSION:-$version}
 printf '%s\n' "$version" | grep -Eq '^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)$' || { printf '%s\n' 'Invalid release version.' >&2; exit 1; }

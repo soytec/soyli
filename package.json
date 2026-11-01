@@ -11,7 +11,7 @@
     "soyli": "bun src/index.ts",
     "start": "bun src/index.ts",
     "typecheck": "bun check",
-    "test": "bun test src/__tests__",
+    "test": "bun test",
     "build": "bun scripts/build.ts",
     "test:standalone": "bun run build && bun scripts/smoke.ts"
   },
