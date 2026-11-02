@@ -1,6 +1,5 @@
-import { ProtocolClient } from '../../client/src/nostr';
 import { prepareAppliedStatuses, deliverAppliedStatuses } from '../../collaboration/src/applied';
-import { repositoryFromEvent, tag } from '../../collaboration/src/protocol';
+import { repositoryFromEvent, tag, type readProposals } from '../../collaboration/src/protocol';
 import { isManifestMigration } from '../../migration/src';
 import { diagnose, redactDiagnostic } from '../../diagnostics/src';
 import { parseAssets, ASSET_LOCK } from '../../assets/src';
@@ -59,7 +58,7 @@ type RelayOperations = Pick<PublicationRelays, 'latest' | 'ensure' | 'close'> &
 type Dependencies = {
   relays?: RelayOperations;
   source?: typeof publishSource;
-  proposalClient?: ProtocolClient;
+  readProposals?: typeof readProposals;
   upload?: typeof uploadBlob;
   owned?: typeof ownedBlobs;
   verified?: typeof verifiedBlob;
@@ -971,103 +970,100 @@ export async function publishProject(options: PublishOptions) {
               repositoryRef(`30617:${account.pubkey}:${job.plan.identifier}`),
               job.source!.announcement,
             );
-        const proposalClient =
-          deps.proposalClient ??
-          new ProtocolClient(() => [
-            ...sourceRepository.relays,
-            job!.plan.targets.relay,
-            sourceUrls(job!.plan.targets.grasp, account.pubkey, job!.plan.identifier, local).relay,
-          ]);
-        try {
-          // Hosted source always publishes main. Linked source remains read-only;
-          // reconcile only when its signed current branch names this exact release.
-          const sourceState = linkedSource ? linkedSource.state : job.source!.state;
-          const sourceBranch = job.repository
-            ? await sourceGit(root, ['rev-parse', '--abbrev-ref', 'HEAD'])
-            : 'main';
-          if (
-            !job.appliedStatuses &&
-            sourceState &&
-            tag(sourceState, `refs/heads/${sourceBranch}`) === job.commit &&
-            sourceRepository.maintainers.includes(account.pubkey)
-          ) {
-            job.appliedBranch = sourceBranch;
-            job.appliedStatuses = await prepareAppliedStatuses({
-              directory: root,
-              client: proposalClient,
-              repository: sourceRepository,
-              previous: sourceState,
-              branch: sourceBranch,
-              commit: job.commit,
-              signer: signer!,
-              pubkey: account.pubkey,
-            });
-            await save();
-          }
-
-          if (job.repository) {
-            // Recheck at this step so a resumed release cannot point at a commit that left the repository.
-            const linked = await loadRepository(
-              latest,
-              { ...repositoryRef(job.repository.address), ...job.repository },
-              local,
-            );
-            const appliedRef = job.appliedStatuses?.length
-              ? job.appliedBranch && `refs/heads/${job.appliedBranch}`
-              : undefined;
-            if (
-              job.appliedStatuses?.length &&
-              (!appliedRef ||
-                !linked.state ||
-                tag(linked.state, appliedRef) !== job.commit ||
-                !repositoryFromEvent(
-                  { ...repositoryRef(job.repository.address), relays: linked.repository.relays },
-                  linked.announcement,
-                ).maintainers.includes(account.pubkey))
-            )
-              throw new RepositoryError(
-                'PROPOSAL_TARGET_CHANGED',
-                'The linked repository no longer confirms the reviewed proposal target.',
-                {
-                  operation: 'confirm applied proposal target',
-                  target: `${job.repository.address}#${appliedRef ?? 'unknown branch'}`,
-                  detail: `Reviewed release commit: ${job.commit}`,
-                  recovery:
-                    'Review the target branch and maintainer list. Resume only after the same branch serves the reviewed commit again. If the change is intentional, prepare a new publication from a fresh checkout. No merged status was sent.',
-                },
-                'source',
-                true,
-              );
-            await verifyReleaseReachable({
-              directory: root,
-              repository: linked.repository,
-              state: linked.state,
-              commit: job.commit,
-              // A tag retaining the release is not evidence that its target branch was merged.
-              ref: appliedRef,
-              lsRemote: deps.lsRemote,
-            });
-          } else
-            await (deps.source ?? publishSource)({
-              directory,
-              origin: job.plan.targets.grasp,
-              local: options.network === 'local',
-              publication: job.source!,
-              expectedCommit: job.sourceBaseCommit,
-            });
-          if (job.appliedStatuses?.length)
-            await deliverAppliedStatuses({
-              repository: sourceRepository,
-              commit: job.commit,
-              pubkey: account.pubkey,
-              statuses: job.appliedStatuses,
+        // Hosted source always publishes main. Linked source remains read-only;
+        // reconcile only when its signed current branch names this exact release.
+        const sourceState = linkedSource ? linkedSource.state : job.source!.state;
+        const sourceBranch = job.repository
+          ? await sourceGit(root, ['rev-parse', '--abbrev-ref', 'HEAD'])
+          : 'main';
+        if (
+          !job.appliedStatuses &&
+          sourceState &&
+          tag(sourceState, `refs/heads/${sourceBranch}`) === job.commit &&
+          sourceRepository.maintainers.includes(account.pubkey)
+        ) {
+          job.appliedBranch = sourceBranch;
+          job.appliedStatuses = await prepareAppliedStatuses({
+            directory: root,
+            nostr: {
+              relays: [
+                ...sourceRepository.relays,
+                job.plan.targets.relay,
+                sourceUrls(job.plan.targets.grasp, account.pubkey, job.plan.identifier, local).relay,
+              ],
               signal: options.signal,
-              recovery:
-                'Run soyli publish --resume to deliver the saved applied events. Do not repeat the merge.',
-            });
-        } finally {
-          if (!deps.proposalClient) proposalClient.close();
+            },
+            readProposals: deps.readProposals,
+            repository: sourceRepository,
+            previous: sourceState,
+            branch: sourceBranch,
+            commit: job.commit,
+            signer: signer!,
+            pubkey: account.pubkey,
+          });
+          await save();
         }
+
+        if (job.repository) {
+          // Recheck at this step so a resumed release cannot point at a commit that left the repository.
+          const linked = await loadRepository(
+            latest,
+            { ...repositoryRef(job.repository.address), ...job.repository },
+            local,
+          );
+          const appliedRef = job.appliedStatuses?.length
+            ? job.appliedBranch && `refs/heads/${job.appliedBranch}`
+            : undefined;
+          if (
+            job.appliedStatuses?.length &&
+            (!appliedRef ||
+              !linked.state ||
+              tag(linked.state, appliedRef) !== job.commit ||
+              !repositoryFromEvent(
+                { ...repositoryRef(job.repository.address), relays: linked.repository.relays },
+                linked.announcement,
+              ).maintainers.includes(account.pubkey))
+          )
+            throw new RepositoryError(
+              'PROPOSAL_TARGET_CHANGED',
+              'The linked repository no longer confirms the reviewed proposal target.',
+              {
+                operation: 'confirm applied proposal target',
+                target: `${job.repository.address}#${appliedRef ?? 'unknown branch'}`,
+                detail: `Reviewed release commit: ${job.commit}`,
+                recovery:
+                  'Review the target branch and maintainer list. Resume only after the same branch serves the reviewed commit again. If the change is intentional, prepare a new publication from a fresh checkout. No merged status was sent.',
+              },
+              'source',
+              true,
+            );
+          await verifyReleaseReachable({
+            directory: root,
+            repository: linked.repository,
+            state: linked.state,
+            commit: job.commit,
+            // A tag retaining the release is not evidence that its target branch was merged.
+            ref: appliedRef,
+            lsRemote: deps.lsRemote,
+          });
+        } else
+          await (deps.source ?? publishSource)({
+            directory,
+            origin: job.plan.targets.grasp,
+            local: options.network === 'local',
+            publication: job.source!,
+            expectedCommit: job.sourceBaseCommit,
+          });
+        if (job.appliedStatuses?.length)
+          await deliverAppliedStatuses({
+            repository: sourceRepository,
+            commit: job.commit,
+            pubkey: account.pubkey,
+            statuses: job.appliedStatuses,
+            signal: options.signal,
+            recovery:
+              'Run soyli publish --resume to deliver the saved applied events. Do not repeat the merge.',
+          });
         job.receipts.source = true;
         await save();
         progress('upload');

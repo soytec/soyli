@@ -1,4 +1,4 @@
-import { ProtocolClient } from '../../client/src/nostr';
+import { queryEvents, publishEvent, type NostrOptions } from '../../client/src/nostr';
 import { DiagnosticError } from '../../diagnostics/src';
 import { sourceGit } from '../../grasp/src/client';
 import type { CreatorSigner } from '../../identity/src/signer';
@@ -26,7 +26,8 @@ async function signExact(
 }
 export async function prepareAppliedStatuses(input: {
   directory: string;
-  client: ProtocolClient;
+  nostr: NostrOptions;
+  readProposals?: typeof readProposals;
   repository: Repository;
   previous: SignedEvent;
   branch: string;
@@ -34,11 +35,11 @@ export async function prepareAppliedStatuses(input: {
   signer: CreatorSigner;
   pubkey: string;
 }) {
-  const { directory, client, repository, previous, branch, commit, signer, pubkey } = input;
+  const { directory, nostr, repository, previous, branch, commit, signer, pubkey } = input;
   const options = { directory };
   const account = { pubkey };
   const now = Math.max(Math.floor(Date.now() / 1000), previous.created_at + 1);
-  const proposals = await readProposals(client, repository);
+  const proposals = await (input.readProposals ?? readProposals)(nostr, repository);
   const included: Proposal[] = [];
   for (const proposal of proposals.filter(
     (p) => ['open', 'draft'].includes(p.status) && p.head && !p.patch,
@@ -98,7 +99,7 @@ export async function deliverAppliedStatuses(input: {
   const account = { pubkey };
   const options = { signal: input.signal };
   const saved = { relays: repository.relays, statuses: input.statuses };
-  const inbox = new ProtocolClient(() => saved.relays);
+  const nostr = { relays: saved.relays, signal: options.signal };
   const supersededProposals: string[] = [];
   try {
     for (const input of saved.statuses) {
@@ -115,7 +116,7 @@ export async function deliverAppliedStatuses(input: {
       if (!root || !reviewed) throw new Error('Saved applied status has no reviewed revision.');
       // Git may already have been published on a previous attempt. A newer
       // contribution must not be closed by that attempt's saved acceptance.
-      const proposal = (await readProposals(inbox, repository, root)).find(
+      const proposal = (await readProposals(nostr, repository, root)).find(
         (p) => p.root.id === root,
       );
       if (!proposal) throw new Error('Proposal unavailable while checking its applied revision.');
@@ -123,9 +124,9 @@ export async function deliverAppliedStatuses(input: {
         supersededProposals.push(root);
         continue;
       }
-      await inbox.publish(event, [], options.signal);
+      await publishEvent(event, nostr);
       if (
-        !(await inbox.query([{ ids: [event.id], limit: 1 }], [], options.signal)).some(
+        !(await queryEvents([{ ids: [event.id], limit: 1 }], nostr)).some(
           (e) => e.id === event.id,
         )
       )
@@ -142,8 +143,6 @@ export async function deliverAppliedStatuses(input: {
         recovery: input.recovery,
       },
     );
-  } finally {
-    inbox.close();
   }
   return supersededProposals;
 }

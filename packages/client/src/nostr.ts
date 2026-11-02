@@ -19,255 +19,228 @@ import {
 import { verifiedEvent, verifySignature, type SignedEvent } from '../../protocol/src';
 import { readRelayUrl } from '../../nostr/src/relay-policy';
 import { redactDiagnostic } from '../../diagnostics/src';
-import { acquireClientRelayPool } from './relay-pool';
+import { relayConnection } from './relay-pool';
+export { relayPool, disconnectRelays } from './relay-pool';
 
-/** A browser-owned, signer-free store; all wire events are verified before ingestion. */
-export class ProtocolClient {
-  private closed = false;
-  private lifetime = new AbortController();
-  readonly store = new EventStore({ verifyEvent: verifySignature });
-  private retained = new Map<string, number>();
-  // EventStore consumes kind 5 into its deletion manager instead of storing the event.
-  // Our reducers need the signed request's timestamp/author, within the same byte budget.
-  private deletions = new Map<string, SignedEvent>();
-  private deletionUpdates = new Subject<SignedEvent>();
-  /** Verified kind-5 events are consumed by EventStore, so cache them separately. */
-  readonly deletionEvents = this.deletionUpdates.asObservable();
-  private retainedBytes = 0;
-  private transport = acquireClientRelayPool();
-  private connection(url: string) {
-    if (this.closed) throw new Error('Protocol client closed.');
-    return this.transport.connection(url);
-  }
-  private relayUrls(hints: string[], hintsFirst = true) {
-    const configured = this.relays();
-    const candidates = hintsFirst ? [...hints, ...configured] : [...configured, ...hints];
-    // Normalize before deduplicating so equivalent URLs cannot consume relay slots.
-    const valid = candidates.flatMap((value) => {
-      try {
-        return [readRelayUrl(value, configured, true)];
-      } catch {
-        return [];
-      }
-    });
-    return [...new Set(valid)].slice(0, 8);
-  }
-  close() {
-    if (this.closed) return;
-    this.closed = true;
-    this.lifetime.abort();
-    this.transport.release();
-    this.store.dispose();
-    this.deletionUpdates.complete();
-    this.deletions.clear();
-    this.retained.clear();
-    this.retainedBytes = 0;
-  }
-  private remember(event: SignedEvent) {
-    this.store.add(event);
-    const newDeletion = event.kind === 5 && !this.deletions.has(event.id);
-    if (event.kind === 5) this.deletions.set(event.id, event);
-    if (!this.retained.has(event.id)) {
-      const bytes = JSON.stringify(event).length * 2;
-      this.retained.set(event.id, bytes);
-      this.retainedBytes += bytes;
-    }
-    while (this.retained.size > 8000 || this.retainedBytes > 16 * 1024 ** 2) {
-      const id = this.retained.keys().next().value!;
-      this.retainedBytes -= this.retained.get(id)!;
-      this.store.remove(id);
-      this.deletions.delete(id);
-      this.retained.delete(id);
-    }
-    if (newDeletion) this.deletionUpdates.next(event);
-  }
-  constructor(
-    readonly relays: () => string[],
-    readonly allowed: (event: SignedEvent) => boolean = () => true,
-  ) {}
-  seed(inputs: SignedEvent[], fromCache = false) {
-    if (this.closed) return;
-    for (const input of inputs)
-      try {
-        const event = verifiedEvent(input);
-        if (fromCache) markFromCache(event);
-        this.remember(event);
-      } catch {}
-  }
-  cached(filters: Filter[]) {
-    return [
-      ...this.store.getByFilters(filters),
-      ...[...this.deletions.values()].filter((event) => matchFilters(filters, event)),
-    ];
-  }
-  async query(
-    filters: Filter[],
-    hints: string[] = [],
-    signal = AbortSignal.timeout(10000),
-    onEvent?: (event: SignedEvent) => void,
-    requireComplete = false,
-    onRelayComplete?: () => void,
-  ) {
-    signal = AbortSignal.any([signal, this.lifetime.signal]);
-    signal.throwIfAborted();
-    const relays = this.relayUrls(hints);
-    const found = new Map<string, SignedEvent>();
-    let completed = 0;
-    await Promise.all(
-      relays.map(async (relay) => {
-        let connection: ReturnType<ProtocolClient['connection']> | undefined;
-        try {
-          connection = this.connection(relay);
-          signal.throwIfAborted();
-          // Keep raw lifecycle messages: strict reads need an EOSE from each relay,
-          // whereas the high-level request() permits partial relay success.
-          await lastValueFrom(
-            connection.relay.req(filters).pipe(
-              takeWhile((m) => m.type !== 'EOSE' && m.type !== 'CLOSED', true),
-              take(1200),
-              takeUntil(timer(3500)),
-              takeUntil(fromEvent(signal, 'abort')),
-              tap((m) => {
-                if (m.type === 'EOSE') {
-                  completed++;
-                  onRelayComplete?.();
-                }
-                if (m.type !== 'EVENT' || found.size >= 1000) return;
-                try {
-                  if (JSON.stringify(m.event).length > 70000) return;
-                  const event = verifiedEvent(m.event);
-                  if (
-                    event.created_at <= Date.now() / 1000 + 60 &&
-                    matchFilters(filters, event)
-                  ) {
-                    const fresh = !found.has(event.id);
-                    found.set(event.id, event);
-                    this.remember(event);
-                    if (fresh) onEvent?.(event);
-                  }
-                } catch {}
-              }),
-              catchError(() => EMPTY),
-              ignoreElements(),
-            ),
-            { defaultValue: undefined },
-          );
-        } finally {
-          connection?.release();
-        }
-      }),
-    );
-    signal.throwIfAborted();
-    if (requireComplete && (!relays.length || completed !== relays.length))
-      throw new Error('list-unavailable');
-    if (!completed && !found.size)
-      throw new Error('No relay completed the query. Check your relay settings or retry.');
-    return [...found.values()];
-  }
-  /** A partial read for interactive UI. Other relays still populate the verified store.
-   * Never use this for mutations requiring a complete relay view. */
-  queryAvailable(filters: Filter[], hints: string[] = [], signal?: AbortSignal) {
-    return new Promise<SignedEvent[]>((resolve, reject) => {
-      const found = new Map<string, SignedEvent>();
-      const finish = () => resolve([...found.values()]);
-      void this.query(
-        filters,
-        hints,
-        signal,
-        (event) => found.set(event.id, event),
-        false,
-        finish,
-      ).then(finish, reject);
-    });
-  }
-  /** A pinned ID has one signed value. Empty EOSEs must not beat a later matching event. */
-  queryEvent(id: string, kinds: number[], hints: string[] = [], signal?: AbortSignal) {
-    signal?.throwIfAborted();
-    if (!/^[a-f0-9]{64}$/.test(id)) throw new Error('Expected an exact event id.');
-    const cached = this.store.getEvent(id);
-    if (cached && kinds.includes(cached.kind) && cached.created_at <= Date.now() / 1000 + 60)
-      return Promise.resolve(cached);
-    return new Promise<SignedEvent | undefined>((resolve, reject) => {
-      const controller = new AbortController();
-      const finish = (event?: SignedEvent) => {
-        resolve(event);
-        controller.abort();
-      };
-      void this.query(
-        [{ ids: [id], kinds, limit: 1 }],
-        hints,
-        signal ? AbortSignal.any([signal, controller.signal]) : controller.signal,
-        finish,
-      ).then(() => finish(), reject);
-    });
-  }
-  /** UI projection: cache first, reactive store updates, bounded relay refresh.
-   * Unsubscribing cancels I/O. Authority-sensitive reads still use query(..., true). */
-  observeQuery(filters: Filter[], hints: string[] = []) {
-    return new Observable<SignedEvent[]>((observer) => {
-      const controller = new AbortController();
-      const emit = () => observer.next(this.cached(filters));
-      const updates = this.store.timeline(filters).subscribe({ next: emit });
-      const deletions = this.deletionUpdates.subscribe((event) => {
-        if (matchFilters(filters, event)) emit();
-      });
-      void this.query(filters, hints, controller.signal).then(
-        () => observer.complete(),
-        (error) => {
-          if (!controller.signal.aborted) observer.error(error);
-        },
-      );
-      return () => {
-        controller.abort();
-        updates.unsubscribe();
-        deletions.unsubscribe();
-      };
-    }).pipe(shareReplay({ bufferSize: 1, refCount: true }));
-  }
-  async publish(input: SignedEvent, hints: string[] = [], signal?: AbortSignal) {
-    signal = AbortSignal.any([...(signal ? [signal] : []), this.lifetime.signal]);
-    signal?.throwIfAborted();
-    const event = verifiedEvent(input);
-    if (!this.allowed(event)) throw new Error('This action is unavailable here.');
-    const relays = this.relayUrls(hints, false);
-    const failures: { from: string; message: string }[] = [];
-    // Fan out once, but acceptance by one relay is enough to finish the action.
-    // The remaining bounded attempts keep running and retain their connections.
-    const attempts = relays.map(async (relay) => {
-      let connection: ReturnType<ProtocolClient['connection']> | undefined;
-      try {
-        signal?.throwIfAborted();
-        connection = this.connection(relay);
-        const result = await connection.relay.publish(event, {
-          timeout: 6000,
-          retries: false,
-        });
-        if (result.ok) return [result.from];
-        throw new Error(result.message || 'rejected or timed out');
-      } catch (error) {
-        failures.push({
-          from: relay,
-          message: redactDiagnostic(
-            error instanceof Error ? error.message : 'Transport failed',
-            200,
-          ),
-        });
-        throw error;
-      } finally {
-        connection?.release();
-      }
-    });
+/** One verified, signer-free cache per application runtime. */
+export const eventStore = new EventStore({ verifyEvent: verifySignature });
+const retained = new Map<string, number>();
+let retainedBytes = 0;
+// EventStore consumes kind 5; reducers still need the signed author and timestamp.
+const deletions = new Map<string, SignedEvent>();
+const deletionUpdates = new Subject<SignedEvent>();
+export const deletionEvents = deletionUpdates.asObservable();
+
+export type NostrOptions = {
+  relays: string[];
+  hints?: string[];
+  signal?: AbortSignal;
+};
+export type QueryOptions = NostrOptions & {
+  requireComplete?: boolean;
+  onEvent?: (event: SignedEvent) => void;
+  onRelayComplete?: () => void;
+};
+
+function relayUrls({ relays, hints = [] }: NostrOptions, hintsFirst = true) {
+  const candidates = hintsFirst ? [...hints, ...relays] : [...relays, ...hints];
+  const valid = candidates.flatMap((value) => {
     try {
-      // Promise.any also handles later rejections after the first acceptance.
-      const accepted = await Promise.any(attempts);
-      signal?.throwIfAborted();
-      this.seed([event]);
-      return accepted;
+      return [readRelayUrl(value, relays, true)];
     } catch {
-      signal?.throwIfAborted();
-      throw new Error(
-        `No relay acknowledged the event. Retry sends the same signed event. ${failures.map((r) => `${redactDiagnostic(r.from, 200)}: ${r.message}`).join('; ')}`,
-      );
+      return [];
     }
+  });
+  return [...new Set(valid)].slice(0, 8);
+}
+
+function remember(event: SignedEvent) {
+  eventStore.add(event);
+  const newDeletion = event.kind === 5 && !deletions.has(event.id);
+  if (event.kind === 5) deletions.set(event.id, event);
+  if (!retained.has(event.id)) {
+    const bytes = JSON.stringify(event).length * 2;
+    retained.set(event.id, bytes);
+    retainedBytes += bytes;
+  }
+  while (retained.size > 8000 || retainedBytes > 16 * 1024 ** 2) {
+    const id = retained.keys().next().value!;
+    retainedBytes -= retained.get(id)!;
+    eventStore.remove(id);
+    deletions.delete(id);
+    retained.delete(id);
+  }
+  if (newDeletion) deletionUpdates.next(event);
+}
+
+/** Verify before ingestion, including kind 5 which bypasses the store's verifier. */
+export function seedEvents(inputs: SignedEvent[], fromCache = false) {
+  for (const input of inputs)
+    try {
+      const event = verifiedEvent(input);
+      if (fromCache) markFromCache(event);
+      remember(event);
+    } catch {}
+}
+
+export function cachedEvents(filters: Filter[]) {
+  return [
+    ...eventStore.getByFilters(filters),
+    ...[...deletions.values()].filter((event) => matchFilters(filters, event)),
+  ];
+}
+
+/** A fresh relay read. Cached state never establishes completeness for a mutation. */
+export async function queryEvents(filters: Filter[], options: QueryOptions) {
+  const signal = options.signal ?? AbortSignal.timeout(10000);
+  signal.throwIfAborted();
+  const relays = relayUrls(options);
+  const found = new Map<string, SignedEvent>();
+  let completed = 0;
+  let truncated = false;
+  await Promise.all(relays.map(async (url) => {
+    const connection = relayConnection(url);
+    try {
+      signal.throwIfAborted();
+      // Raw lifecycle messages are intentional: request() permits partial success.
+      await lastValueFrom(connection.relay.req(filters).pipe(
+        takeWhile((message) => message.type !== 'EOSE' && message.type !== 'CLOSED', true),
+        take(1200),
+        takeUntil(timer(3500)),
+        takeUntil(fromEvent(signal, 'abort')),
+        tap((message) => {
+          if (message.type === 'EOSE') {
+            completed++;
+            options.onRelayComplete?.();
+          }
+          if (message.type !== 'EVENT') return;
+          try {
+            if (JSON.stringify(message.event).length > 70000) return;
+            const event = verifiedEvent(message.event);
+            if (event.created_at > Date.now() / 1000 + 60 || !matchFilters(filters, event)) return;
+            if (found.size >= 1000 && !found.has(event.id)) {
+              truncated = true;
+              return;
+            }
+            const fresh = !found.has(event.id);
+            found.set(event.id, event);
+            remember(event);
+            if (fresh) options.onEvent?.(event);
+          } catch {}
+        }),
+        catchError(() => EMPTY),
+        ignoreElements(),
+      ), { defaultValue: undefined });
+    } finally {
+      connection.release();
+    }
+  }));
+  signal.throwIfAborted();
+  if (options.requireComplete && (!relays.length || completed !== relays.length || truncated))
+    throw new Error('list-unavailable');
+  if (!completed && !found.size)
+    throw new Error('No relay completed the query. Check your relay settings or retry.');
+  return [...found.values()];
+}
+
+/** Partial UI read; other relays keep populating the shared store until cancelled. */
+export function queryAvailable(filters: Filter[], options: NostrOptions) {
+  return new Promise<SignedEvent[]>((resolve, reject) => {
+    const found = new Map<string, SignedEvent>();
+    const finish = () => resolve([...found.values()]);
+    void queryEvents(filters, {
+      ...options,
+      onEvent: (event) => found.set(event.id, event),
+      onRelayComplete: finish,
+    }).then(finish, reject);
+  });
+}
+
+/** Empty EOSEs must not beat a later matching event from another relay. */
+export function queryEvent(id: string, kinds: number[], options: NostrOptions) {
+  options.signal?.throwIfAborted();
+  if (!/^[a-f0-9]{64}$/.test(id)) throw new Error('Expected an exact event id.');
+  const cached = eventStore.getEvent(id);
+  if (cached && kinds.includes(cached.kind) && cached.created_at <= Date.now() / 1000 + 60)
+    return Promise.resolve(cached);
+  return new Promise<SignedEvent | undefined>((resolve, reject) => {
+    const controller = new AbortController();
+    const finish = (event?: SignedEvent) => {
+      resolve(event);
+      controller.abort();
+    };
+    void queryEvents([{ ids: [id], kinds, limit: 1 }], {
+      ...options,
+      signal: options.signal
+        ? AbortSignal.any([options.signal, controller.signal])
+        : controller.signal,
+      onEvent: finish,
+    }).then(() => finish(), reject);
+  });
+}
+
+/** Cache-first projection during a bounded relay refresh, not a live subscription. */
+export function observeQuery(filters: Filter[], options: NostrOptions) {
+  return new Observable<SignedEvent[]>((observer) => {
+    const controller = new AbortController();
+    const signal = options.signal
+      ? AbortSignal.any([options.signal, controller.signal])
+      : controller.signal;
+    const emit = () => observer.next(cachedEvents(filters));
+    const updates = eventStore.timeline(filters).subscribe({ next: emit });
+    const deletionSubscription = deletionUpdates.subscribe((event) => {
+      if (matchFilters(filters, event)) emit();
+    });
+    void queryEvents(filters, { ...options, signal }).then(
+      () => observer.complete(),
+      (error) => {
+        if (!controller.signal.aborted) observer.error(error);
+      },
+    );
+    return () => {
+      controller.abort();
+      updates.unsubscribe();
+      deletionSubscription.unsubscribe();
+    };
+  }).pipe(shareReplay({ bufferSize: 1, refCount: true }));
+}
+
+export async function publishEvent(
+  input: SignedEvent,
+  options: NostrOptions & { allowed?: (event: SignedEvent) => boolean },
+) {
+  options.signal?.throwIfAborted();
+  const event = verifiedEvent(input);
+  if (options.allowed && !options.allowed(event)) throw new Error('This action is unavailable here.');
+  const failures: { from: string; message: string }[] = [];
+  // First acceptance finishes the action; remaining bounded attempts keep running.
+  const attempts = relayUrls(options, false).map(async (url) => {
+    let connection: ReturnType<typeof relayConnection> | undefined;
+    try {
+      options.signal?.throwIfAborted();
+      connection = relayConnection(url);
+      const result = await connection.relay.publish(event, { timeout: 6000, retries: false });
+      if (result.ok) return [result.from];
+      throw new Error(result.message || 'rejected or timed out');
+    } catch (error) {
+      failures.push({
+        from: url,
+        message: redactDiagnostic(error instanceof Error ? error.message : 'Transport failed', 200),
+      });
+      throw error;
+    } finally {
+      connection?.release();
+    }
+  });
+  try {
+    const accepted = await Promise.any(attempts);
+    options.signal?.throwIfAborted();
+    seedEvents([event]);
+    return accepted;
+  } catch {
+    options.signal?.throwIfAborted();
+    throw new Error(
+      `No relay acknowledged the event. Retry sends the same signed event. ${failures.map((r) => `${redactDiagnostic(r.from, 200)}: ${r.message}`).join('; ')}`,
+    );
   }
 }

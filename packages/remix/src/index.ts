@@ -1,7 +1,6 @@
 import { DiagnosticError } from '../../diagnostics/src';
 import { validateAssets, parseAssets, ASSET_LOCK } from '../../assets/src';
 import { relatedAssetHtml } from '../../assets/src/related';
-import { ProtocolClient } from '../../client/src/nostr';
 import { readRepository, repositoryRef } from '../../collaboration/src/protocol';
 import { cloneRevision } from '../../collaboration/src/git';
 import { writeBinding } from '../../publish/src/binding';
@@ -183,20 +182,15 @@ export async function loadRemix(reference: string, network: Network, signal: Abo
   const source = manifest.tags.find((t) => t[0] === 'source')?.[1];
   const commit = manifest.tags.find((t) => t[0] === 'source-commit')?.[1];
   if (source?.startsWith('nostr://') && /^[a-f0-9]{40}$/.test(commit ?? '')) {
-    const client = new ProtocolClient(() =>
+    const relays =
       network === 'local'
         ? [
             ...hints,
             ...repositoryRef(source).relays.map(loopbackRelayUrl),
             'ws://127.0.0.1:19347/relay',
           ]
-        : [...hints, 'wss://relay.napplet.soy', ...discoveryRelays],
-    );
-    try {
-      repository = await readRepository(client, source);
-    } finally {
-      client.close();
-    }
+        : [...hints, 'wss://relay.napplet.soy', ...discoveryRelays];
+    repository = await readRepository({ relays, signal }, source);
   }
   if (archiveError && !repository)
     throw new DiagnosticError(

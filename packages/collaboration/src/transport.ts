@@ -1,5 +1,5 @@
 import { DiagnosticError } from '../../diagnostics/src';
-import { ProtocolClient } from '../../client/src/nostr';
+import { queryEvents, publishEvent } from '../../client/src/nostr';
 import { sourceGit } from '../../grasp/src/client';
 import { verifiedEvent, type SignedEvent } from '../../protocol/src';
 import { selectCloneUrls, fetchCommit } from './git';
@@ -31,12 +31,12 @@ export async function deliverProposal(input: {
   if (!advertised.length || !input.clones.length || !input.relays.length)
     throw new Error('Proposal requires upstream clone servers and relays.');
   await sourceGit(input.directory, ['cat-file', '-e', `${commit}^{commit}`]);
-  const client = new ProtocolClient(() => input.relays);
+  const nostr = { relays: input.relays, signal: input.signal };
   const failures: Error[] = [];
   try {
     input.signal?.throwIfAborted();
     await input.onProgress?.('relay', 'Publishing the signed proposal to the upstream relays.');
-    await client.publish(event, input.relays, input.signal);
+    await publishEvent(event, nostr);
     let hosted = false;
     for (const url of selectCloneUrls(input.clones, input.local)) {
       input.signal?.throwIfAborted();
@@ -90,7 +90,7 @@ export async function deliverProposal(input: {
     // Legacy events may advertise contributor clones. Keep their signature and
     // require those original locations to remain fetchable; never create a fork.
     await fetchCommit(input.directory, advertised, commit!, input.local);
-    const visible = await client.query([{ ids: [event.id], limit: 1 }], [], input.signal);
+    const visible = await queryEvents([{ ids: [event.id], limit: 1 }], nostr);
     if (!visible.some((e) => e.id === event.id))
       throw new Error('Upstream relay acknowledged the proposal but has not made it queryable.');
     await input.checkpoint?.('proposal');
@@ -103,8 +103,6 @@ export async function deliverProposal(input: {
       recovery:
         'Resolve the relay or advertised Git clone error, then run soyli propose --resume to resend the saved event. Legacy signed clone locations must remain available; no repository is created or signed event rewritten.',
     });
-  } finally {
-    client.close();
   }
 }
 
@@ -129,7 +127,7 @@ export async function publishBranch(input: {
     !input.ref.startsWith('refs/heads/')
   )
     throw new Error('Saved branch publication is invalid.');
-  const client = new ProtocolClient(() => input.relays);
+  const nostr = { relays: input.relays, signal: input.signal };
   const failures: Error[] = [];
   try {
     await sourceGit(input.directory, ['cat-file', '-e', `${commit}^{commit}`]);
@@ -140,7 +138,7 @@ export async function publishBranch(input: {
         const head = remote.split('\t')[0];
         if (head !== input.previous && head !== commit)
           throw new Error('Upstream branch changed since publication was prepared.');
-        await client.publish(state, input.relays, input.signal);
+        await publishEvent(state, nostr);
         await sourceGit(input.directory, [
           'push',
           '--no-verify',
@@ -153,7 +151,7 @@ export async function publishBranch(input: {
           `${commit}\t${input.ref}`
         )
           throw new Error('Upstream does not advertise the merged commit.');
-        const visible = await client.query([{ ids: [state.id], limit: 1 }], [], input.signal);
+        const visible = await queryEvents([{ ids: [state.id], limit: 1 }], nostr);
         if (!visible.some((e) => e.id === state.id))
           throw new Error('Signed repository state is not queryable after the push.');
         return;
@@ -183,7 +181,5 @@ export async function publishBranch(input: {
           'Resolve the upstream Git or relay error, then rerun soyli push from the same saved commit. The local merge and publication journal are retained.',
       },
     );
-  } finally {
-    client.close();
   }
 }

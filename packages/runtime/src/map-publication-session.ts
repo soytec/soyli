@@ -1,7 +1,7 @@
 import { OutboxPublisher, type OutboxPublicationPlan } from './outbox-session';
 import { z } from 'zod';
 import { matchFilters } from 'nostr-tools';
-import { ProtocolClient } from '../../client/src/nostr';
+import { queryEvents } from '../../client/src/nostr';
 import { verifiedEvent, type SignedEvent } from '../../protocol/src';
 import { readRelayUrl } from '../../nostr/src/relay-policy';
 import { redactDiagnostic } from '../../diagnostics/src';
@@ -16,7 +16,6 @@ const locks = new Set<string>();
 export class NappletMapPublication {
   private pending = new Map<string, SignedEvent>();
   private bases = new Map<string, string | null>();
-  private clients = new Set<ProtocolClient>();
   private busy = false;
   private lifetime = new AbortController();
   constructor(
@@ -36,8 +35,6 @@ export class NappletMapPublication {
   ) {}
   close() {
     this.lifetime.abort();
-    for (const client of this.clients) client.close();
-    this.clients.clear();
     this.pending.clear();
     this.bases.clear();
   }
@@ -138,13 +135,12 @@ export class NappletMapPublication {
       if (locks.has(lock))
         throw new Error('map-busy: this record is being edited in another player.');
       locks.add(lock);
-      const client = new ProtocolClient(() => relays);
-      this.clients.add(client);
       const publisher = new OutboxPublisher();
       const io =
         this.options.io ??
         ({
-          query: (filters, s, complete) => client.query(filters, [], s, undefined, complete),
+          query: (filters, signal, requireComplete) =>
+            queryEvents(filters, { relays, signal, requireComplete }),
           publish: async (event, s) => {
             const results = await Promise.allSettled(
               relays.map((relay) => publisher.publish(relay, event, s)),
@@ -291,8 +287,6 @@ export class NappletMapPublication {
       } finally {
         locks.delete(lock);
         publisher.close();
-        client.close();
-        this.clients.delete(client);
       }
     };
     if (typeof navigator !== 'undefined' && navigator.locks)

@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { DiagnosticError } from '../../diagnostics/src';
 import { verifiedEvent, sha256, type SignedEvent } from '../../protocol/src';
 import { validateManifest } from '../../protocol/src/manifest';
-import type { ProtocolClient } from '../../client/src/nostr';
+import { queryEvents, observeQuery, type NostrOptions } from '../../client/src/nostr';
 import { Observable, map, filter, distinctUntilChanged, Subscription } from 'rxjs';
 
 export const commitPattern = /^[a-f0-9]{40}$/;
@@ -129,14 +129,14 @@ export type Repository = ReturnType<typeof repositoryRef> & {
   euc?: string;
 };
 export async function readRepository(
-  client: ProtocolClient,
+  options: NostrOptions,
   reference: string,
 ): Promise<Repository> {
   const ref = repositoryRef(reference);
   const event = latest(
-    await client.query(
+    await queryEvents(
       [{ kinds: [30617], authors: [ref.pubkey], '#d': [ref.identifier], limit: 5 }],
-      ref.relays,
+      { ...options, hints: [...ref.relays, ...(options.hints ?? [])] },
     ),
   )[0];
   if (!event) throw new Error('Repository announcement unavailable.');
@@ -144,7 +144,7 @@ export async function readRepository(
 }
 /** Legacy NIP-34 reciprocal maintainership at the selected repository coordinate.
  * An invitation alone must not make a state authoritative. */
-export async function readRepositoryState(client: ProtocolClient, repo: Repository) {
+export async function readRepositoryState(options: NostrOptions, repo: Repository) {
   if (repo.event.tags.some((t) => ['M', 'm'].includes(t[0])))
     throw new DiagnosticError(
       'REPOSITORY_AUTHORITY_UNSUPPORTED',
@@ -156,9 +156,9 @@ export async function readRepositoryState(client: ProtocolClient, repo: Reposito
           'Use ngit for this repository’s merge and push operations. Soy has not changed its announcement or selected another identity.',
       },
     );
-  const announcements = await client.query(
+  const announcements = await queryEvents(
     [{ kinds: [30617], authors: repo.maintainers, '#d': [repo.identifier], limit: 100 }],
-    repo.relays,
+    { ...options, hints: [...repo.relays, ...(options.hints ?? [])] },
   );
   const authors = [
     repo.pubkey,
@@ -172,9 +172,9 @@ export async function readRepositoryState(client: ProtocolClient, repo: Reposito
     }),
   ];
   const state = latest(
-    await client.query(
+    await queryEvents(
       [{ kinds: [30618], authors, '#d': [repo.identifier], limit: 100 }],
-      repo.relays,
+      { ...options, hints: [...repo.relays, ...(options.hints ?? [])] },
     ),
   )[0];
   return { state, authors: [...new Set(authors)] };
@@ -198,22 +198,23 @@ export function repositoryFromEvent(
   };
 }
 /** A display projection; later announcements replace earlier ones as relays respond. */
-export function observeRepository(client: ProtocolClient, reference: string) {
+export function observeRepository(
+  options: NostrOptions & { allowed?: (event: SignedEvent) => boolean },
+  reference: string,
+) {
   const ref = repositoryRef(reference);
-  return client
-    .observeQuery(
-      [{ kinds: [30617], authors: [ref.pubkey], '#d': [ref.identifier], limit: 5 }],
-      ref.relays,
-    )
-    .pipe(
-      map((events) => latest(events)[0]),
-      filter((event): event is SignedEvent => !!event),
-      distinctUntilChanged((a, b) => a.id === b.id),
-      map((event) => {
-        if (!client.allowed(event)) throw new Error('Repository unavailable here.');
-        return repositoryFromEvent(ref, event);
-      }),
-    );
+  return observeQuery(
+    [{ kinds: [30617], authors: [ref.pubkey], '#d': [ref.identifier], limit: 5 }],
+    { ...options, hints: [...ref.relays, ...(options.hints ?? [])] },
+  ).pipe(
+    map((events) => latest(events)[0]),
+    filter((event): event is SignedEvent => !!event),
+    distinctUntilChanged((a, b) => a.id === b.id),
+    map((event) => {
+      if (options.allowed && !options.allowed(event)) throw new Error('Repository unavailable here.');
+      return repositoryFromEvent(ref, event);
+    }),
+  );
 }
 export type Proposal = {
   root: SignedEvent;
@@ -293,27 +294,31 @@ export function proposalsFromEvents(repo: Repository, inputs: SignedEvent[]): Pr
     };
   });
 }
-export async function readProposals(client: ProtocolClient, repo: Repository, selected?: string) {
-  const roots = await client.query(
+export async function readProposals(options: NostrOptions, repo: Repository, selected?: string) {
+  const roots = await queryEvents(
     [
       { kinds: [1617, 1618], '#a': [repo.address], limit: 100 },
       ...(selected ? [{ kinds: [1617, 1618], ids: [proposalId(selected)], limit: 1 }] : []),
     ],
-    repo.relays,
+    { ...options, hints: [...repo.relays, ...(options.hints ?? [])] },
   );
   if (!roots.length) return [];
   const ids = roots.map((e) => e.id);
-  const related = await client.query(
+  const related = await queryEvents(
     [
       { kinds: [1619, 1111], '#E': ids, limit: 500 },
       { kinds: [1630, 1631, 1632, 1633], '#e': ids, limit: 500 },
     ],
-    repo.relays,
+    { ...options, hints: [...repo.relays, ...(options.hints ?? [])] },
   );
   return proposalsFromEvents(repo, [...roots, ...related]);
 }
 /** Progressive review UI. The CLI's merge/review reads keep their full-query contract. */
-export function observeProposals(client: ProtocolClient, repo: Repository, selected?: string) {
+export function observeProposals(
+  options: NostrOptions & { allowed?: (event: SignedEvent) => boolean },
+  repo: Repository,
+  selected?: string,
+) {
   const filters = [
     { kinds: [1617, 1618], '#a': [repo.address], limit: 100 },
     ...(selected ? [{ kinds: [1617, 1618], ids: [proposalId(selected)], limit: 1 }] : []),
@@ -332,7 +337,10 @@ export function observeProposals(client: ProtocolClient, repo: Repository, selec
     };
     const emit = () =>
       observer.next(
-        proposalsFromEvents(repo, [...roots, ...related.values()].filter(client.allowed)),
+        proposalsFromEvents(
+          repo,
+          [...roots, ...related.values()].filter((event) => options.allowed?.(event) ?? true),
+        ),
       );
     const loadRelated = () => {
       timer = undefined;
@@ -343,33 +351,31 @@ export function observeProposals(client: ProtocolClient, repo: Repository, selec
         group.forEach((id) => requested.add(id));
         pendingRelated++;
         subscriptions.add(
-          client
-            .observeQuery(
-              [
-                { kinds: [1619, 1111], '#E': group, limit: 500 },
-                { kinds: [1630, 1631, 1632, 1633], '#e': group, limit: 500 },
-              ],
-              repo.relays,
-            )
-            .subscribe({
-              next: (events) => {
-                for (const event of events)
-                  if (related.size < 2000 || related.has(event.id)) related.set(event.id, event);
-                emit();
-              },
-              error: (error) => observer.error(error),
-              complete: () => {
-                pendingRelated--;
-                complete();
-              },
-            }),
+          observeQuery(
+            [
+              { kinds: [1619, 1111], '#E': group, limit: 500 },
+              { kinds: [1630, 1631, 1632, 1633], '#e': group, limit: 500 },
+            ],
+            { ...options, hints: [...repo.relays, ...(options.hints ?? [])] },
+          ).subscribe({
+            next: (events) => {
+              for (const event of events)
+                if (related.size < 2000 || related.has(event.id)) related.set(event.id, event);
+              emit();
+            },
+            error: (error) => observer.error(error),
+            complete: () => {
+              pendingRelated--;
+              complete();
+            },
+          }),
         );
       }
       loadingRelated = false;
       complete();
     };
     subscriptions.add(
-      client.observeQuery(filters, repo.relays).subscribe({
+      observeQuery(filters, { ...options, hints: [...repo.relays, ...(options.hints ?? [])] }).subscribe({
         next: (events) => {
           roots = latest(events)
             .filter((e) => values(e, 'a').includes(repo.address))

@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { Accounts } from '../packages/identity/src/accounts';
-import { ProtocolClient } from '../packages/client/src/nostr';
+import { queryEvents, type NostrOptions } from '../packages/client/src/nostr';
 import { defaultTargets } from '../packages/publish/src/config';
 import { readBinding } from '../packages/publish/src/binding';
 import { committedSource } from '../packages/publish/src/git-source';
@@ -37,36 +37,30 @@ import { hostEnvironment } from './distribution';
 
 export async function proposalList(options: CollaborationOptions & { reference?: string }) {
   const targets = defaultTargets(options.network);
-  let client = new ProtocolClient(() => [
-    targets.relay,
-    targets.grasp.replace(/^http/, 'ws') + '/',
-    ...targets.mirrors,
-  ]);
+  let nostr: NostrOptions = {
+    signal: options.signal,
+    relays: [targets.relay, targets.grasp.replace(/^http/, 'ws') + '/', ...targets.mirrors],
+  };
   try {
     const configured = await collaborationContext(options);
-    client.close();
-    client = configured.client;
+    nostr = configured.nostr;
   } catch (error) {
     if (!options.reference) throw error;
   }
-  try {
-    let repository: Repository, selected: string | undefined;
-    if (!options.reference) repository = await projectRepository(options, client);
-    else if (/^(nostr:\/\/|30617:|naddr1)/.test(options.reference))
-      repository = await readRepository(client, options.reference);
-    else {
-      selected = proposalId(options.reference);
-      const root = (
-        await client.query([{ ids: [selected], kinds: [1617, 1618, 1619], limit: 1 }])
-      )[0];
-      if (!root) throw new Error('Proposal unavailable on the configured relays.');
-      repository = await readRepository(client, tag(root, 'a') ?? '');
-      selected = root.kind === 1619 ? tag(root, 'E') : root.id;
-    }
-    return { repository, proposals: await readProposals(client, repository, selected), selected };
-  } finally {
-    client.close();
+  let repository: Repository, selected: string | undefined;
+  if (!options.reference) repository = await projectRepository(options, nostr);
+  else if (/^(nostr:\/\/|30617:|naddr1)/.test(options.reference))
+    repository = await readRepository(nostr, options.reference);
+  else {
+    selected = proposalId(options.reference);
+    const root = (
+      await queryEvents([{ ids: [selected], kinds: [1617, 1618, 1619], limit: 1 }], nostr)
+    )[0];
+    if (!root) throw new Error('Proposal unavailable on the configured relays.');
+    repository = await readRepository(nostr, tag(root, 'a') ?? '');
+    selected = root.kind === 1619 ? tag(root, 'E') : root.id;
   }
+  return { repository, proposals: await readProposals(nostr, repository, selected), selected };
 }
 const compact = (p: Proposal) => ({
   id: p.root.id,
@@ -140,23 +134,19 @@ export async function review(
       let input = binding?.upstream?.manifest;
       if (!input) {
         const context = await collaborationContext(options);
-        try {
-          input = (
-            await context.client.query(
-              [
-                {
-                  kinds: [35129],
-                  authors: [state.repository.pubkey],
-                  '#d': [state.repository.identifier],
-                  limit: 1,
-                },
-              ],
-              state.repository.relays,
-            )
-          )[0];
-        } finally {
-          context.client.close();
-        }
+        input = (
+          await queryEvents(
+            [
+              {
+                kinds: [35129],
+                authors: [state.repository.pubkey],
+                '#d': [state.repository.identifier],
+                limit: 1,
+              },
+            ],
+            { ...context.nostr, hints: state.repository.relays },
+          )
+        )[0];
       }
       if (!input) throw new Error('No original napplet release was found for this repository.');
       manifest = (await validateManifest(input)).manifest;

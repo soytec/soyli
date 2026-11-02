@@ -4,7 +4,7 @@ import { DiagnosticError } from '../../diagnostics/src';
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { nip19, type EventTemplate } from 'nostr-tools';
 import { join } from 'node:path';
-import { ProtocolClient } from '../../client/src/nostr';
+import { queryEvents, publishEvent, type NostrOptions } from '../../client/src/nostr';
 import { Accounts, captureAccount } from '../../identity/src/accounts';
 import type { Network } from '../../identity/src/signer';
 import { sha256, verifiedEvent, type SignedEvent } from '../../protocol/src';
@@ -47,18 +47,21 @@ export async function collaborationContext(options: CollaborationOptions) {
   );
   const targets = resolveTargets(project, options.network);
   const account = await (options.accounts ?? new Accounts(options.network)).current();
-  const client = new ProtocolClient(() => [
-    ...(binding?.upstream?.relays ?? []),
-    targets.relay,
-    sourceUrls(
-      targets.grasp,
-      account?.pubkey ?? '0'.repeat(64),
-      'project',
-      options.network === 'local',
-    ).relay,
-    ...targets.mirrors,
-  ]);
-  return { binding, project, targets, account, client };
+  const nostr: NostrOptions = {
+    signal: options.signal,
+    relays: [
+      ...(binding?.upstream?.relays ?? []),
+      targets.relay,
+      sourceUrls(
+        targets.grasp,
+        account?.pubkey ?? '0'.repeat(64),
+        'project',
+        options.network === 'local',
+      ).relay,
+      ...targets.mirrors,
+    ],
+  };
+  return { binding, project, targets, account, nostr };
 }
 /** The creator's own NIP-34 repository, configured or found among the Git remotes. */
 async function linkedRepository(
@@ -75,16 +78,15 @@ async function linkedRepository(
     signal: options.signal,
   });
 }
-export async function projectRepository(options: CollaborationOptions, client: ProtocolClient) {
+export async function projectRepository(options: CollaborationOptions, nostr: NostrOptions) {
   const binding = await readBinding(options.directory);
-  if (binding?.upstream) return readRepository(client, binding.upstream.address);
+  if (binding?.upstream) return readRepository(nostr, binding.upstream.address);
   const context = await collaborationContext(options);
-  context.client.close();
   if (!context.account) throw new Error('Select the project creator or open a repository address.');
   const linked = await linkedRepository(options, context);
   if (linked)
     return readRepository(
-      client,
+      nostr,
       nip19.naddrEncode({
         kind: 30617,
         pubkey: linked.pubkey,
@@ -94,7 +96,7 @@ export async function projectRepository(options: CollaborationOptions, client: P
     );
   const { projectIdentity } = await import('../../publish/src/config');
   return readRepository(
-    client,
+    nostr,
     sourceUrls(
       context.targets.grasp,
       context.account.pubkey,
@@ -144,7 +146,7 @@ export async function propose(
   const accounts = await captureAccount(options.accounts ?? new Accounts(options.network));
   await options.onProgress?.('check', 'Checking the reviewed revision and upstream repository.');
   const context = await collaborationContext({ ...options, accounts }),
-    { client, targets, account, project, binding } = context;
+    { nostr, targets, account, project, binding } = context;
   let signer: Awaited<ReturnType<Accounts['signer']>> | undefined;
   let hasSignedJournal = false;
   try {
@@ -153,7 +155,7 @@ export async function propose(
       throw new Error(
         'This project has no Git upstream. Remix a napplet with published Git history first.',
       );
-    const repository = await readRepository(client, binding.upstream.address);
+    const repository = await readRepository(nostr, binding.upstream.address);
     const branch = await sourceGit(options.directory, ['symbolic-ref', '--short', 'HEAD']);
     const key = (
       await sha256(`${repository.address}:${branch}:${account.pubkey}:${binding.project.previewId}`)
@@ -229,7 +231,7 @@ export async function propose(
         const commit = await committedSource(options.directory);
         let adopted = false;
         if (!saved) {
-          const matches = (await readProposals(client, repository)).filter((p) => {
+          const matches = (await readProposals(nostr, repository)).filter((p) => {
             const name = tag(p.root, 'branch-name')?.replace(/^pr\//, '');
             return (
               ['open', 'draft'].includes(p.status) &&
@@ -269,7 +271,7 @@ export async function propose(
           );
         if (!saved || saved.commit !== commit || adopted) {
           if (saved?.root) {
-            const current = (await readProposals(client, repository, saved.root.id)).find(
+            const current = (await readProposals(nostr, repository, saved.root.id)).find(
               (p) => p.root.id === saved.root.id,
             );
             if (!current)
@@ -511,7 +513,6 @@ export async function propose(
     throw cause;
   } finally {
     await signer?.close();
-    client.close();
   }
 }
 export async function proposalAction(
@@ -528,14 +529,14 @@ export async function proposalAction(
     accounts: await captureAccount(options.accounts ?? new Accounts(options.network)),
   };
   const context = await collaborationContext(options),
-    { client, account } = context;
+    { nostr, account } = context;
   let signer: Awaited<ReturnType<Accounts['signer']>> | undefined;
   try {
     const id = proposalId(options.proposal),
-      root = (await client.query([{ ids: [id], kinds: [1618, 1617], limit: 1 }]))[0];
+      root = (await queryEvents([{ ids: [id], kinds: [1618, 1617], limit: 1 }], nostr))[0];
     if (!root) throw new Error('Proposal unavailable.');
-    const repository = await readRepository(client, tag(root, 'a') ?? '');
-    const proposal = (await readProposals(client, repository, id)).find((p) => p.root.id === id);
+    const repository = await readRepository(nostr, tag(root, 'a') ?? '');
+    const proposal = (await readProposals(nostr, repository, id)).find((p) => p.root.id === id);
     if (!proposal) throw new Error('Proposal unavailable.');
     if (!account) throw new Error('Sign in with soyli account connect or create.');
     const maintainer = repository.maintainers.includes(account.pubkey);
@@ -561,7 +562,7 @@ export async function proposalAction(
           repository.euc,
           options.target,
         ]);
-      const { state: remote } = await readRepositoryState(client, repository);
+      const { state: remote } = await readRepositoryState(nostr, repository);
       const targetBranch =
         tag(proposal.revision, 'target-branch') ??
         tag(proposal.root, 'target-branch') ??
@@ -665,11 +666,10 @@ export async function proposalAction(
       JSON.stringify(event.tags) !== JSON.stringify(template.tags)
     )
       throw new Error('Saved review action changed.');
-    await client.publish(event, repository.relays);
+    await publishEvent(event, { ...nostr, hints: repository.relays });
     return { event: event.id, status: options.action };
   } finally {
     await signer?.close();
-    client.close();
   }
 }
 
@@ -689,10 +689,10 @@ export async function pushSource(
     ...options,
     accounts: await captureAccount(options.accounts ?? new Accounts(options.network)),
   };
-  const { client, account } = await collaborationContext(options);
+  const { nostr, account } = await collaborationContext(options);
   let signer: Awaited<ReturnType<Accounts['signer']>> | undefined;
   try {
-    const repository = await projectRepository(options, client);
+    const repository = await projectRepository(options, nostr);
     if (!account || !repository.maintainers.includes(account.pubkey))
       throw new Error('Only an announced repository maintainer can publish its branches.');
     const commit = await committedSource(options.directory);
@@ -733,7 +733,7 @@ export async function pushSource(
           'Finish the saved Git publication before publishing new commits. Restore its saved branch tip and rerun soyli push; keep the journal.',
         );
       if (!saved || (saved.done && (!options.resumeCompleted || saved.commit !== commit))) {
-        const { state: previous, authors } = await readRepositoryState(client, repository);
+        const { state: previous, authors } = await readRepositoryState(nostr, repository);
         if (!authors.includes(account.pubkey))
           throw new Error(
             'This maintainer has not confirmed repository state authority. Accept maintainership with ngit before pushing.',
@@ -766,7 +766,7 @@ export async function pushSource(
         });
         const statuses = await prepareAppliedStatuses({
           directory: options.directory,
-          client,
+          nostr,
           repository,
           previous,
           branch,
@@ -799,7 +799,7 @@ export async function pushSource(
         tag(state, 'd') !== repository.identifier
       )
         throw new Error('Saved repository state mismatch.');
-      const current = await readRepositoryState(client, repository);
+      const current = await readRepositoryState(nostr, repository);
       if (
         !current.authors.includes(account.pubkey) ||
         ![saved.previousState, state.id].includes(current.state?.id)
@@ -842,6 +842,5 @@ export async function pushSource(
     });
   } finally {
     await signer?.close();
-    client.close();
   }
 }

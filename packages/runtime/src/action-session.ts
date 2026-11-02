@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { type Filter } from 'nostr-tools';
 import { verifiedEvent, type SignedEvent } from '../../protocol/src';
-import { ProtocolClient } from '../../client/src/nostr';
+import { queryEvents, publishEvent } from '../../client/src/nostr';
 import { DiagnosticError, redactDiagnostic } from '../../diagnostics/src';
 import {
   LIST_SUPPORT,
@@ -67,7 +67,7 @@ const latest = (events: SignedEvent[]) =>
 const locks = new Set<string>();
 /** Viewer actions only. Never exposes the signer or arbitrary signing to the frame. */
 export class NappletActions {
-  private client: ProtocolClient;
+  private lifetime = new AbortController();
   private io: ActionIO;
   private pending = new Map<string, { event: SignedEvent; baseId?: string }>();
   private busy = false;
@@ -81,15 +81,14 @@ export class NappletActions {
       io?: ActionIO;
     },
   ) {
-    this.client = new ProtocolClient(() => options.relays);
     this.io = options.io ?? {
       query: (filters, signal, complete) =>
-        this.client.query(filters, [], signal, undefined, complete),
-      publish: (event, signal) => this.client.publish(event, [], signal),
+        queryEvents(filters, { relays: options.relays, signal, requireComplete: complete }),
+      publish: (event, signal) => publishEvent(event, { relays: options.relays, signal }),
     };
   }
   close() {
-    this.client.close();
+    this.lifetime.abort();
     this.pending.clear();
   }
   async handle(message: Record<string, unknown>): Promise<Record<string, unknown>> {
@@ -97,7 +96,9 @@ export class NappletActions {
     if (!this.options.pubkey || !this.options.sign) return { ok: false, error: 'not-signed-in' };
     if (this.busy) return { ok: false, error: 'busy' };
     this.busy = true;
-    const signal = AbortSignal.any([this.options.signal, AbortSignal.timeout(28000)]);
+    const signal = AbortSignal.any([
+      this.options.signal, this.lifetime.signal, AbortSignal.timeout(28000),
+    ]);
     try {
       // Release the request within the shim deadline even if a signer never answers.
       // Every continuation checks this signal before signing or publishing.
