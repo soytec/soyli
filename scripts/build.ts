@@ -1,8 +1,8 @@
-import { compileCli } from './cli-compile';
-import { previewAssets } from '../src/preview/assets';
+import { compileCli } from './cli-compile.ts';
+import { previewAssets } from '../src/preview/assets.ts';
 import { cp, mkdir, writeFile } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
-import { playwrightDirectory } from '../src/distribution';
+import { playwrightDirectory } from '#src/distribution/environment.ts';
 import boilerplate from '../vendor/boilerplate.json';
 import skills from '../vendor/skills.json';
 import version from '../distribution/version.json';

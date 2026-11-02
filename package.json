@@ -4,38 +4,7 @@
   "type": "module",
   "private": true,
   "imports": {
-    "#app-data/*": "./packages/app-data/src/*.ts",
-    "#assets": "./packages/assets/src/index.ts",
-    "#assets/*": "./packages/assets/src/*.ts",
-    "#backend/*": "./packages/backend/src/*.ts",
-    "#blossom/*": "./packages/blossom/src/*.ts",
-    "#client/*": "./packages/client/src/*.ts",
-    "#collaboration/*": "./packages/collaboration/src/*.ts",
-    "#diagnostics": "./packages/diagnostics/src/index.ts",
-    "#dynamic-backends/fixtures/*": "./packages/dynamic-backends/fixtures/*",
-    "#dynamic-backends/*": "./packages/dynamic-backends/src/*.ts",
-    "#examples/*": "./packages/examples/*.ts",
-    "#grasp/*": "./packages/grasp/src/*.ts",
-    "#identity/*": "./packages/identity/src/*.ts",
-    "#input/*": "./packages/input/src/*.ts",
-    "#lifecycle": "./packages/lifecycle/src/index.ts",
-    "#lifecycle/*": "./packages/lifecycle/src/*.ts",
-    "#migration": "./packages/migration/src/index.ts",
-    "#multiplayer/*": "./packages/multiplayer/src/*.ts",
-    "#nostr/discovery-relays.json": "./packages/nostr/discovery-relays.json",
-    "#nostr/*": "./packages/nostr/src/*.ts",
-    "#protocol": "./packages/protocol/src/index.ts",
-    "#protocol/*": "./packages/protocol/src/*.ts",
-    "#publish": "./packages/publish/src/index.ts",
-    "#publish/*": "./packages/publish/src/*.ts",
-    "#remix": "./packages/remix/src/index.ts",
-    "#remix/*": "./packages/remix/src/*.ts",
-    "#runtime": "./packages/runtime/src/index.ts",
-    "#runtime/appearance-control": "./packages/runtime/src/appearance-control.tsx",
-    "#runtime/media-controls": "./packages/runtime/src/media-controls.tsx",
-    "#runtime/multiplayer-settings": "./packages/runtime/src/multiplayer-settings.tsx",
-    "#runtime/settings-panel": "./packages/runtime/src/settings-panel.tsx",
-    "#runtime/*": "./packages/runtime/src/*.ts"
+    "#src/*": "./src/*"
   },
   "bin": {
     "soyli": "src/index.ts"
@@ -47,7 +16,8 @@
     "typecheck": "bun check",
     "test": "bun test",
     "build": "bun scripts/build.ts",
-    "test:standalone": "bun run build && bun scripts/smoke.ts"
+    "test:standalone": "bun run build && bun scripts/smoke.ts",
+    "check": "bun run --bun tsc --noEmit"
   },
   "dependencies": {
     "@contextvm/sdk": "0.13.16",

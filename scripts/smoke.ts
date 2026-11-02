@@ -1,11 +1,25 @@
 import { cp, mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
+import { workerExchange } from '../src/backend/dynamic/worker-process.ts';
 const root = await mkdtemp(join(tmpdir(), 'soyli-standalone-'));
 let server: ReturnType<typeof Bun.spawn> | undefined;
 try {
   await cp(new URL('../dist', import.meta.url).pathname, join(root, 'distribution'), { recursive: true });
   const exe = join(root, 'distribution/soyli');
+  const worker = [exe, '--internal-backend-worker'];
+  const compiled = await workerExchange(
+    worker,
+    { type: 'compile', source: 'export function handle(_context: unknown, input: { value: number }) { return { value: input.value }; }' },
+    { maximum: 65536, timeoutMs: 10000 },
+  );
+  const result = await workerExchange(
+    worker,
+    { type: 'run', code: compiled.code, context: {}, input: { value: 7 } },
+    { maximum: 65536, timeoutMs: 10000 },
+  );
+  if (result.value !== 7) throw new Error('Relocated backend worker returned an invalid result');
+  console.log('Relocated distribution: backend compilation and sandbox worker passed.');
   const created = Bun.spawn([exe, 'new', 'demo', '--template', 'soft-orbit', '--identity', 'later', '--no-install'], { cwd: root, stdout: 'pipe', stderr: 'pipe' });
   const [code, out, err] = await Promise.all([created.exited, new Response(created.stdout).text(), new Response(created.stderr).text()]);
   if (code) throw new Error(`${out}\n${err}`);

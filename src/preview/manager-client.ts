@@ -1,5 +1,5 @@
-import type { manageProject } from '../manager';
-import { setupWorkshop } from './workshop-client';
+import type { manageProject } from '#src/services/project-manager.ts';
+import { setupWorkshop } from './workshop-client.ts';
 type State = Awaited<ReturnType<typeof manageProject>>;
 const el = <K extends keyof HTMLElementTagNameMap>(name: K, text = '', className = '') => {
   const node = document.createElement(name);

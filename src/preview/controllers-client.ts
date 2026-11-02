@@ -2,7 +2,7 @@ import {
   createGamepadInput,
   type Controller,
   type GamepadBindings,
-} from '#input/gamepad';
+} from '#src/creator/helpers/gamepad.ts';
 
 const el = <K extends keyof HTMLElementTagNameMap>(tag: K, text = '', className = '') => {
   const node = document.createElement(tag);

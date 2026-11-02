@@ -1,4 +1,4 @@
-import type { PeerDiagnostics } from '#runtime/webrtc-diagnostics';
+import type { PeerDiagnostics } from '#src/runtime/webrtc-diagnostics.ts';
 
 export function setupDiagnostics(read: () => Promise<PeerDiagnostics[]>, signal: AbortSignal) {
   const details = document.querySelector<HTMLDetailsElement>('#connection-details')!;

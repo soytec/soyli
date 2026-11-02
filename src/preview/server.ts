@@ -1,25 +1,25 @@
-import { relatedAssetHtml } from '#assets/related';
-import { diagnose, formatDiagnostic } from '#diagnostics';
-import { manageProject, editProject } from '../manager';
-import type { Workshop } from '../workshop';
-import { readBytes } from '#client/bytes';
-import { readAssets, assetBytes, assetMime } from '#assets';
-import { readBinding } from '#publish/binding';
-import { recordingSchema, type Recording } from '#publish/config';
-import { videoBytesResponse } from '#backend/preview-videos';
+import { relatedAssetHtml } from '#src/services/assets/related.ts';
+import { diagnose, formatDiagnostic } from '#src/diagnostics.ts';
+import { manageProject, editProject } from '#src/services/project-manager.ts';
+import type { Workshop } from '#src/services/workshop.ts';
+import { readBytes } from '#src/helpers/bytes.ts';
+import { readAssets, assetBytes, assetMime } from '#src/services/assets/assets.ts';
+import { readBinding } from '#src/services/publish/binding.ts';
+import { recordingSchema, type Recording } from '#src/services/publish/config.ts';
+import { videoBytesResponse } from '#src/backend/preview-videos.ts';
 import { z } from 'zod';
-import { MAX_READ_ARTIFACT_BYTES, sha256 } from '#protocol/artifact';
-import { missingDomains } from '#runtime/capabilities';
-import type { PreviewAssets } from './assets';
-import { builtRequirements } from '#publish/artifact';
-import { regularFile } from '#publish/project';
+import { MAX_READ_ARTIFACT_BYTES, sha256 } from '#src/protocol/artifact.ts';
+import { missingDomains } from '#src/runtime/capabilities.ts';
+import type { PreviewAssets } from './assets.ts';
+import { builtRequirements } from '#src/services/publish/artifact.ts';
+import { regularFile } from '#src/services/publish/project.ts';
 import { fileURLToPath } from 'node:url';
-import { listingPreview, listingImage, listingVideo } from './listing';
-import type { Network } from '#identity/signer';
-import type { BackendProvider } from '#multiplayer/client';
-import { backendConfig } from '#multiplayer/contracts';
-import { backendProject } from '../backend';
-import { projectIdentity } from '#publish/config';
+import { listingPreview, listingImage, listingVideo } from './listing.ts';
+import type { Network } from '#src/services/identity/signer.ts';
+import type { BackendProvider } from '#src/backend/multiplayer/client.ts';
+import { backendConfig } from '#src/backend/multiplayer/contracts.ts';
+import { backendProject } from '#src/services/backend.ts';
+import { projectIdentity } from '#src/services/publish/config.ts';
 
 const relayUrl = z
   .string()

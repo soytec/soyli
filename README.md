@@ -33,17 +33,22 @@ Chromium and project toolchains download on demand. Signing, publishing, and
 collaboration still require their configured services; native key storage uses
 the operating system credential store.
 
-The CLI lives in `src`, with tests in `src/__tests__`. Shared implementation
-packages live under `packages`; templates, support files, vendor snapshots, and
-distribution metadata live at the repository root. See [migration notes](docs/MIGRATION.md) for provenance
-and the remaining release infrastructure work.
+All implementation lives in `src`: `index.ts` starts the CLI, `commands/` handles
+command dispatch, `services/` contains workflows and integrations, and `helpers/`
+contains small shared utilities. Backend infrastructure, browser runtime, preview,
+creator tooling, toolchains, and distribution support each have focused folders.
+Tests live beside their modules in `__tests__/`; shared fixtures live in `tests/fixtures/`
+and runnable examples in `examples/`. Templates, support files, vendor snapshots,
+and distribution metadata remain at the repository root. See
+[migration notes](docs/MIGRATION.md) for provenance and remaining release infrastructure work.
 
 ## Internal imports
 
-Use the root `package.json` import aliases across package boundaries: `#protocol`,
-`#identity/accounts`, or `#runtime/host`, for example. Keep relative imports within
-the same package. These are source folders, not separately published workspaces;
-no TypeScript path aliases or extra package manifests are needed.
+Use the single root `package.json` source alias across features, for example
+`#src/protocol/events.ts` or `#src/services/identity/accounts.ts`. Keep relative
+imports within a feature and include the file extension. Import browser-safe
+modules directly rather than through barrels that also load Bun-only services.
+No TypeScript path aliases or extra package manifests are needed.
 
 Resource paths (`new URL(...)` and `?raw` imports) remain relative. Templates and
 vendor snapshots must not depend on this repository's private import aliases.

@@ -1,6 +1,6 @@
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { parseArgs } from 'node:util';
-import type { previewAssets } from '../src/preview/assets';
+import type { previewAssets } from '../src/preview/assets.ts';
 
 const root = resolve(import.meta.dir, '..');
 
@@ -44,8 +44,10 @@ export async function compileCli(
               filter:
                 /\/(gamepad|app-data|app-data-contract|handler|handler-types|coordinated-audio)\.ts\?raw$/,
             },
-            ({ path }) => ({
-              path: resolve(root, 'src', path.slice(0, -4)),
+            ({ path, importer }) => ({
+              path: path.startsWith('#')
+                ? Bun.resolveSync(path.slice(0, -4), dirname(importer))
+                : resolve(dirname(importer), path.slice(0, -4)),
               namespace: 'creator-source',
             }),
           );
@@ -81,7 +83,7 @@ if (import.meta.main) {
     );
   if (values.distribution !== undefined && !/^[a-z][a-z0-9-]*$/.test(values.distribution))
     throw new Error('--distribution must be a lowercase package manager name, e.g. nix.');
-  const { previewAssets } = await import('../src/preview/assets');
+  const { previewAssets } = await import('../src/preview/assets.ts');
   await compileCli(outfile, version, {
     previewAssets: values['preview-assets'] ? await previewAssets() : undefined,
     distribution: values.distribution,

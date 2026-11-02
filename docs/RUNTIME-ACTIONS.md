@@ -176,7 +176,7 @@ relay policy, retry and unpublish contract. This requires the matching host upda
 
 ## Verification
 
-`bun test packages/runtime packages/nostr packages/client` covers imports, list
+`bun test src/runtime src/services/nostr` covers imports, list
 preservation, incomplete relay reads, conflicts, consent, signer integrity,
 identity cancellation, upload hash verification and public identifier helpers.
 `bun test tests/services/runtime-actions.test.ts` exercises the pinned upstream

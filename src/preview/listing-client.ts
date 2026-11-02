@@ -1,4 +1,4 @@
-import type { ListingPreview } from './listing';
+import type { ListingPreview } from './listing.ts';
 
 export function setupListing(signal: AbortSignal) {
   const panel = document.querySelector<HTMLElement>('#listing')!;

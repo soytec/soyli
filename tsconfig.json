@@ -12,6 +12,6 @@
     "resolveJsonModule": true,
     "types": ["bun"]
   },
-  "include": ["src", "packages", "scripts", "docs/examples", "templates/__tests__", "index.ts"],
+  "include": ["src", "scripts", "examples", "tests", "docs/examples", "templates/__tests__", "index.ts"],
   "exclude": ["node_modules", "dist"]
 }

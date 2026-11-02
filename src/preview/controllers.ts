@@ -1,5 +1,5 @@
-import { PLAYER_SANDBOX, verifiedDocument } from '#runtime';
-import { sha256 } from '#protocol/artifact';
+import { PLAYER_SANDBOX, verifiedDocument } from '#src/runtime/artifact.ts';
+import { sha256 } from '#src/protocol/artifact.ts';
 
 declare const SOYLI_CONTROLLER_TESTER: string;
 export function setupControllers(signal: AbortSignal) {

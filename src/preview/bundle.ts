@@ -1,6 +1,6 @@
-import { appearanceBootstrap } from '#runtime/appearance';
+import { appearanceBootstrap } from '#src/runtime/appearance.ts';
 import { readFile } from 'node:fs/promises';
-import type { PreviewAssets } from './assets';
+import type { PreviewAssets } from './assets.ts';
 
 /** Build-time only in distributed CLIs. Source development runs this in a fresh process. */
 export async function compilePreviewAssets(): Promise<PreviewAssets> {
@@ -53,7 +53,7 @@ export async function compilePreviewAssets(): Promise<PreviewAssets> {
       await readFile(new URL('../../templates/preview.html', import.meta.url), 'utf8')
     ).replace(
       '<!-- appearance -->',
-      `<script>${appearanceBootstrap}</script><style>${await readFile(new URL('../../packages/runtime/src/appearance.css', import.meta.url), 'utf8')}</style>`,
+      `<script>${appearanceBootstrap}</script><style>${await readFile(new URL('../runtime/components/appearance.css', import.meta.url), 'utf8')}</style>`,
     ),
   };
 }

@@ -1,26 +1,26 @@
-import { readAssets } from '#assets';
-import { effectiveProject } from '#publish/binding';
+import { readAssets } from '#src/services/assets/assets.ts';
+import { effectiveProject } from '#src/services/publish/binding.ts';
 import {
   inspectPreviewVideo,
   MAX_VIDEO_BYTES,
-} from '#protocol/preview-video';
+} from '#src/protocol/preview-video.ts';
 import {
   projectSchema,
   projectIdentity,
   projectTopics,
   resolveTargets,
-} from '#publish/config';
-import { regularFile } from '#publish/project';
-import { MAX_PREVIEW_BYTES } from '#protocol/preview';
-import { encodeAddress, sha256 } from '#protocol';
-import { videoMatchesBuild } from '#publish/media-review';
-import { missingDomains } from '#runtime/capabilities';
-import type { Network } from '#identity/signer';
-import { builtConfiguration, builtRequirements } from '#publish/artifact';
+} from '#src/services/publish/config.ts';
+import { regularFile } from '#src/services/publish/project.ts';
+import { MAX_PREVIEW_BYTES } from '#src/protocol/preview.ts';
+import { encodeAddress, sha256 } from '#src/protocol/events.ts';
+import { videoMatchesBuild } from '#src/services/publish/media-review.ts';
+import { missingDomains } from '#src/runtime/capabilities.ts';
+import type { Network } from '#src/services/identity/signer.ts';
+import { builtConfiguration, builtRequirements } from '#src/services/publish/artifact.ts';
 import {
   MAX_ARTIFACT_BYTES,
   MAX_READ_ARTIFACT_BYTES,
-} from '#protocol/artifact';
+} from '#src/protocol/artifact.ts';
 
 async function projectAt(root: string) {
   return projectSchema.parse(

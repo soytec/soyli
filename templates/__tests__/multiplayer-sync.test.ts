@@ -3,7 +3,7 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { pathToFileURL } from 'node:url';
-import { creatorSkills } from '../../src/creator-kit';
+import { creatorSkills } from '#src/creator/kit.ts';
 
 const example = creatorSkills()['docs/examples/multiplayer-sync.ts'];
 const directory = await mkdtemp(join(tmpdir(), 'soy-sync-example-'));
