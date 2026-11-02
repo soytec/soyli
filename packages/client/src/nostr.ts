@@ -1,11 +1,25 @@
 import { EventStore } from 'applesauce-core';
 import { markFromCache } from 'applesauce-core/helpers';
-import { RelayPool } from 'applesauce-relay';
 import { matchFilters, type Filter } from 'nostr-tools';
-import { Observable, Subject, shareReplay, take, takeUntil, takeWhile, timer } from 'rxjs';
+import {
+  EMPTY,
+  Observable,
+  Subject,
+  catchError,
+  fromEvent,
+  ignoreElements,
+  lastValueFrom,
+  shareReplay,
+  take,
+  takeUntil,
+  takeWhile,
+  tap,
+  timer,
+} from 'rxjs';
 import { verifiedEvent, verifySignature, type SignedEvent } from '../../protocol/src';
 import { readRelayUrl } from '../../nostr/src/relay-policy';
 import { redactDiagnostic } from '../../diagnostics/src';
+import { acquireClientRelayPool } from './relay-pool';
 
 /** A browser-owned, signer-free store; all wire events are verified before ingestion. */
 export class ProtocolClient {
@@ -20,49 +34,29 @@ export class ProtocolClient {
   /** Verified kind-5 events are consumed by EventStore, so cache them separately. */
   readonly deletionEvents = this.deletionUpdates.asObservable();
   private retainedBytes = 0;
-  private connections = new Map<
-    string,
-    { pool: RelayPool; users: number; timer?: ReturnType<typeof setTimeout> }
-  >();
+  private transport = acquireClientRelayPool();
   private connection(url: string) {
     if (this.closed) throw new Error('Protocol client closed.');
-    let entry = this.connections.get(url);
-    if (!entry) {
-      if (this.connections.size >= 24) {
-        const idle = [...this.connections].find(([, e]) => !e.users);
-        if (!idle) throw new Error('Relay connections are busy. Retry shortly.');
-        clearTimeout(idle[1].timer);
-        idle[1].pool.close();
-        this.connections.delete(idle[0]);
+    return this.transport.connection(url);
+  }
+  private relayUrls(hints: string[], hintsFirst = true) {
+    const configured = this.relays();
+    const candidates = hintsFirst ? [...hints, ...configured] : [...configured, ...hints];
+    // Normalize before deduplicating so equivalent URLs cannot consume relay slots.
+    const valid = candidates.flatMap((value) => {
+      try {
+        return [readRelayUrl(value, configured, true)];
+      } catch {
+        return [];
       }
-      entry = { pool: new RelayPool(), users: 0 };
-      this.connections.set(url, entry);
-    }
-    clearTimeout(entry.timer);
-    entry.users++;
-    const current = entry;
-    return {
-      pool: current.pool,
-      release: () => {
-        if (this.closed) return;
-        if (--current.users || this.connections.get(url) !== current) return;
-        current.timer = setTimeout(() => {
-          current.pool.close();
-          this.connections.delete(url);
-        }, 10000);
-        (current.timer as any).unref?.();
-      },
-    };
+    });
+    return [...new Set(valid)].slice(0, 8);
   }
   close() {
     if (this.closed) return;
     this.closed = true;
     this.lifetime.abort();
-    for (const entry of this.connections.values()) {
-      clearTimeout(entry.timer);
-      entry.pool.close();
-    }
-    this.connections.clear();
+    this.transport.release();
     this.store.dispose();
     this.deletionUpdates.complete();
     this.deletions.clear();
@@ -116,15 +110,7 @@ export class ProtocolClient {
   ) {
     signal = AbortSignal.any([signal, this.lifetime.signal]);
     signal.throwIfAborted();
-    const relays = [...new Set([...hints, ...this.relays()])]
-      .flatMap((value) => {
-        try {
-          return [readRelayUrl(value, this.relays(), true)];
-        } catch {
-          return [];
-        }
-      })
-      .slice(0, 8);
+    const relays = this.relayUrls(hints);
     const found = new Map<string, SignedEvent>();
     let completed = 0;
     await Promise.all(
@@ -132,50 +118,40 @@ export class ProtocolClient {
         let connection: ReturnType<ProtocolClient['connection']> | undefined;
         try {
           connection = this.connection(relay);
-          const pool = connection.pool;
-          await new Promise<void>((resolve) => {
-            if (signal.aborted) {
-              resolve();
-              return;
-            }
-            const subscription = pool
-              .req([relay], filters)
-              .pipe(
-                takeWhile((m) => m.type !== 'EOSE' && m.type !== 'CLOSED', true),
-                take(1200),
-                takeUntil(timer(3500)),
-              )
-              .subscribe({
-                next: (m) => {
-                  if (m.type === 'EOSE') {
-                    completed++;
-                    onRelayComplete?.();
+          signal.throwIfAborted();
+          // Keep raw lifecycle messages: strict reads need an EOSE from each relay,
+          // whereas the high-level request() permits partial relay success.
+          await lastValueFrom(
+            connection.relay.req(filters).pipe(
+              takeWhile((m) => m.type !== 'EOSE' && m.type !== 'CLOSED', true),
+              take(1200),
+              takeUntil(timer(3500)),
+              takeUntil(fromEvent(signal, 'abort')),
+              tap((m) => {
+                if (m.type === 'EOSE') {
+                  completed++;
+                  onRelayComplete?.();
+                }
+                if (m.type !== 'EVENT' || found.size >= 1000) return;
+                try {
+                  if (JSON.stringify(m.event).length > 70000) return;
+                  const event = verifiedEvent(m.event);
+                  if (
+                    event.created_at <= Date.now() / 1000 + 60 &&
+                    matchFilters(filters, event)
+                  ) {
+                    const fresh = !found.has(event.id);
+                    found.set(event.id, event);
+                    this.remember(event);
+                    if (fresh) onEvent?.(event);
                   }
-                  if (m.type !== 'EVENT' || found.size >= 1000) return;
-                  try {
-                    if (JSON.stringify(m.event).length > 70000) return;
-                    const event = verifiedEvent(m.event);
-                    if (
-                      event.created_at <= Date.now() / 1000 + 60 &&
-                      matchFilters(filters, event)
-                    ) {
-                      const fresh = !found.has(event.id);
-                      found.set(event.id, event);
-                      this.remember(event);
-                      if (fresh) onEvent?.(event);
-                    }
-                  } catch {}
-                },
-                error: () => resolve(),
-                complete: resolve,
-              });
-            const abort = () => {
-              subscription.unsubscribe();
-              resolve();
-            };
-            signal.addEventListener('abort', abort, { once: true });
-            subscription.add(() => signal.removeEventListener('abort', abort));
-          });
+                } catch {}
+              }),
+              catchError(() => EMPTY),
+              ignoreElements(),
+            ),
+            { defaultValue: undefined },
+          );
         } finally {
           connection?.release();
         }
@@ -253,15 +229,7 @@ export class ProtocolClient {
     signal?.throwIfAborted();
     const event = verifiedEvent(input);
     if (!this.allowed(event)) throw new Error('This action is unavailable here.');
-    const relays = [...new Set([...this.relays(), ...hints])]
-      .flatMap((value) => {
-        try {
-          return [readRelayUrl(value, this.relays(), true)];
-        } catch {
-          return [];
-        }
-      })
-      .slice(0, 8);
+    const relays = this.relayUrls(hints, false);
     const failures: { from: string; message: string }[] = [];
     // Fan out once, but acceptance by one relay is enough to finish the action.
     // The remaining bounded attempts keep running and retain their connections.
@@ -270,13 +238,12 @@ export class ProtocolClient {
       try {
         signal?.throwIfAborted();
         connection = this.connection(relay);
-        const results = await connection.pool.publish([relay], event, {
+        const result = await connection.relay.publish(event, {
           timeout: 6000,
           retries: false,
         });
-        const accepted = results.filter((r) => r.ok).map((r) => r.from);
-        if (accepted.length) return accepted;
-        throw new Error(results.map((r) => r.message || 'rejected or timed out').join('; '));
+        if (result.ok) return [result.from];
+        throw new Error(result.message || 'rejected or timed out');
       } catch (error) {
         failures.push({
           from: relay,
