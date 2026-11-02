@@ -6,8 +6,8 @@ import { dirname, join } from 'node:path';
 import { realpathSync } from 'node:fs';
 import ipaddr from 'ipaddr.js';
 import { publicIp, publicLookup } from './blossom';
-import { verifiedEvent, type SignedEvent } from '../../protocol/src';
-import { appReferences, referenceAddress, latestMetadata } from '../../protocol/src/preview';
+import { verifiedEvent, type SignedEvent } from '#protocol';
+import { appReferences, referenceAddress, latestMetadata } from '#protocol/preview';
 
 // Bun's built-in ws substitute ignores lookup/maxPayload. Load the pinned implementation
 // from its actual entry file so DNS checks run at connection time under both Bun and Node.

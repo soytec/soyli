@@ -1,4 +1,4 @@
-import { formatDiagnostic } from '../../diagnostics/src';
+import { formatDiagnostic } from '#diagnostics';
 import type { PublishJob } from './journal';
 import { MAX_OUTBOX_RELAYS } from './limits';
 

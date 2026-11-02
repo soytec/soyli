@@ -1,6 +1,6 @@
 import type { WorkshopState } from '../workshop';
-import { formatDiagnostic } from '../../packages/diagnostics/src';
-import { outboxReport } from '../../packages/publish/src/outbox-report';
+import { formatDiagnostic } from '#diagnostics';
+import { outboxReport } from '#publish/outbox-report';
 
 const el = <K extends keyof HTMLElementTagNameMap>(tag: K, text = '', className = '') => {
   const node = document.createElement(tag);

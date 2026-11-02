@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { decodeAddress, identityAddress } from '../../protocol/src';
+import { decodeAddress, identityAddress } from '#protocol';
 
 export const joinSchema = z
   .object({

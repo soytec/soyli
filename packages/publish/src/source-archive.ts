@@ -1,5 +1,5 @@
 import { posix } from 'node:path';
-import { sourceArchive } from '../../remix/src/archive';
+import { sourceArchive } from '#remix/archive';
 import { MAX_SOURCE_FILES } from './limits';
 
 export type SourceArchiveAlias = { path: string; target: string; executable: boolean };

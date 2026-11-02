@@ -1,5 +1,5 @@
-import { validateManifest } from '../../protocol/src/manifest';
-import type { SignedEvent } from '../../protocol/src';
+import { validateManifest } from '#protocol/manifest';
+import type { SignedEvent } from '#protocol';
 import { missingDomains } from './capabilities';
 
 export type IntentContract = { convention: string; params: string[] };

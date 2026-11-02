@@ -1,14 +1,14 @@
 #!/usr/bin/env bun
 import { migrateCommand } from './migrate';
 import { lifecycleCommand } from './lifecycle';
-import { diagnose, formatDiagnostic } from '../packages/diagnostics/src';
+import { diagnose, formatDiagnostic } from '#diagnostics';
 import { publishFromProject, proposeFromProject } from './share-project';
 import { manageProject, editProject } from './manager';
-import { MAX_ASSET_BYTES } from '../packages/assets/src';
-import { checkpoint } from '../packages/publish/src/git-source';
-import { proposalAction, pushSource } from '../packages/collaboration/src/service';
+import { MAX_ASSET_BYTES } from '#assets';
+import { checkpoint } from '#publish/git-source';
+import { proposalAction, pushSource } from '#collaboration/service';
 import { proposalList, review } from './review';
-import { readBinding, writeBinding } from '../packages/publish/src/binding';
+import { readBinding, writeBinding } from '#publish/binding';
 import { projectConfiguration, screenshotProject, recordProject } from './project-config';
 import { parseArgs } from 'node:util';
 import { join } from 'node:path';
@@ -20,15 +20,15 @@ import {
   dangerousFileKeystore,
   sessionStorageSchema,
   type Account,
-} from '../packages/identity/src/accounts';
+} from '#identity/accounts';
 import {
   AccountError,
   defaultSignerRelays,
   type Network,
-} from '../packages/identity/src/signer';
+} from '#identity/signer';
 import { ask, hiddenInput as readHiddenInput, secretStdin } from './input';
-import { publicationStatus } from '../packages/publish/src';
-import { outboxReport } from '../packages/publish/src/outbox-report';
+import { publicationStatus } from '#publish';
+import { outboxReport } from '#publish/outbox-report';
 import { initBackend, syncBackend, backendStatus } from './backend';
 import { initModule, checkModule, moduleCommand } from './dynamic-backend';
 import { checkPublication } from './publish-check';
@@ -38,11 +38,11 @@ import { commandName, hostEnvironment, version } from './distribution';
 import { describeRelease, updateCli } from './update';
 import { setupProject, buildProject, projectTool, installConformanceBrowser } from './toolchain';
 import { installCreatorSkills } from './creator-kit';
-import { loadRemix, createRemix } from '../packages/remix/src';
+import { loadRemix, createRemix } from '#remix';
 import { testMultiplayer, multiplayerOptions } from './multiplayer';
 
 if (process.argv.includes('--internal-backend-worker')) {
-  await (await import('../packages/dynamic-backends/src/worker')).backendWorker();
+  await (await import('#dynamic-backends/worker')).backendWorker();
   await new Promise(() => {});
 }
 

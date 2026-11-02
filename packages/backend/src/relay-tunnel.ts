@@ -2,7 +2,7 @@ import { connect, createServer, type Socket } from 'node:net';
 import { timingSafeEqual } from 'node:crypto';
 import { RelayPool, type RelayOptions } from 'applesauce-relay';
 import { publicLookup } from './blossom';
-import { publicRelayUrl, loopbackRelayUrl } from '../../nostr/src/relay-policy';
+import { publicRelayUrl, loopbackRelayUrl } from '#nostr/relay-policy';
 
 /** A single-destination, authenticated loopback CONNECT tunnel. Bun performs TLS
  * for the original hostname; the TCP peer is pinned after guarded DNS resolution.

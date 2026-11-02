@@ -9,8 +9,8 @@ import {
   assetBytes,
   validateAssets,
   ASSET_LOCK,
-} from '../../packages/assets/src';
-import { inspectProject } from '../../packages/publish/src/project';
+} from '#assets';
+import { inspectProject } from '#publish/project';
 const png = new Uint8Array(
   Buffer.from(
     'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+/lS8AAAAASUVORK5CYII=',

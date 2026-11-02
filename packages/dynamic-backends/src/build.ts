@@ -2,7 +2,7 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { nip19 } from 'nostr-tools';
-import { sourceGit } from '../../grasp/src/client';
+import { sourceGit } from '#grasp/client';
 import { blob } from './source-files';
 import { downloadPack } from './source-http';
 import { workerExchange, type WorkerCommand } from './worker-process';

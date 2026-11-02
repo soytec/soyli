@@ -1,24 +1,24 @@
 import { previewIntents } from './intent-client';
-import { AppearanceControl } from '../../packages/runtime/src/appearance-control';
-import { shellTheme } from '../../packages/runtime/src/appearance';
+import { AppearanceControl } from '#runtime/appearance-control';
+import { shellTheme } from '#runtime/appearance';
 import type { ExtensionSigner } from 'applesauce-signers';
 import { setupManager } from './manager-client';
 import shim from '@napplet/shim/prelude.global?raw';
-import { loadArtifact, PLAYER_SANDBOX } from '../../packages/runtime/src';
-import { nappletPrelude } from '../../packages/runtime/src/prelude';
-import { missingDomains } from '../../packages/runtime/src/capabilities';
-import { attachNappletHost, type HostPrompt } from '../../packages/runtime/src/host';
-import type { ExportFile } from '../../packages/runtime/src/filesystem';
+import { loadArtifact, PLAYER_SANDBOX } from '#runtime';
+import { nappletPrelude } from '#runtime/prelude';
+import { missingDomains } from '#runtime/capabilities';
+import { attachNappletHost, type HostPrompt } from '#runtime/host';
+import type { ExportFile } from '#runtime/filesystem';
 import type { PreviewRevision } from './server';
 import { setupListing } from './listing-client';
 import { setupDiagnostics } from './diagnostics';
 import { setupControllers } from './controllers';
 import { createRoot } from 'react-dom/client';
 import { createElement } from 'react';
-import { SettingsControl } from '../../packages/runtime/src/settings-panel';
-import { MediaControls } from '../../packages/runtime/src/media-controls';
-import { declaredConfig } from '../../packages/runtime/src/config-schema';
-import { MultiplayerSettings } from '../../packages/runtime/src/multiplayer-settings';
+import { SettingsControl } from '#runtime/settings-panel';
+import { MediaControls } from '#runtime/media-controls';
+import { declaredConfig } from '#runtime/config-schema';
+import { MultiplayerSettings } from '#runtime/multiplayer-settings';
 
 createRoot(document.querySelector('#appearance')!).render(createElement(AppearanceControl));
 

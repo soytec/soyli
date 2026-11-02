@@ -8,8 +8,8 @@ import {
   aggregateHash,
   encodeAddress,
   type SignedEvent,
-} from '../../packages/protocol/src';
-import { validateManifest } from '../../packages/protocol/src/manifest';
+} from '#protocol';
+import { validateManifest } from '#protocol/manifest';
 const command = process.env.SPACE_TEST_CLI
   ? [process.env.SPACE_TEST_CLI]
   : [process.execPath, new URL('../index.ts', import.meta.url).pathname];

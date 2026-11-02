@@ -1,5 +1,5 @@
 import pins from '../vendor/toolchain.json';
-import { AccountError } from '../packages/identity/src/signer';
+import { AccountError } from '#identity/signer';
 
 export function selectNodeToolchain(platform: string, arch: string, macVersion?: string) {
   let legacy = false;

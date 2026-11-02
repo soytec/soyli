@@ -37,3 +37,13 @@ The CLI lives in `src`, with tests in `src/__tests__`. Shared implementation
 packages live under `packages`; templates, support files, vendor snapshots, and
 distribution metadata live at the repository root. See [migration notes](docs/MIGRATION.md) for provenance
 and the remaining release infrastructure work.
+
+## Internal imports
+
+Use the root `package.json` import aliases across package boundaries: `#protocol`,
+`#identity/accounts`, or `#runtime/host`, for example. Keep relative imports within
+the same package. These are source folders, not separately published workspaces;
+no TypeScript path aliases or extra package manifests are needed.
+
+Resource paths (`new URL(...)` and `?raw` imports) remain relative. Templates and
+vendor snapshots must not depend on this repository's private import aliases.

@@ -3,13 +3,13 @@ import { mkdtemp, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { projectConfiguration } from '../project-config';
-import discoveryRelays from '../../packages/nostr/discovery-relays.json';
+import discoveryRelays from '#nostr/discovery-relays.json';
 import {
   defaultTargets,
   projectPublishingDefaults,
   projectSchema,
   resolveTargets,
-} from '../../packages/publish/src/config';
+} from '#publish/config';
 
 test('effective targets are readable before setup and editable per network without changing runtime hints', async () => {
   const root = await mkdtemp(join(tmpdir(), 'napplet-config-'));

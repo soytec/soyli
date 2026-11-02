@@ -1,30 +1,30 @@
 import type { ThemeSource } from './appearance';
-import { blossomBytes, downloadBytes, readBytes } from '../../client/src/bytes';
-import { resourceMime } from '../../client/src/resource-mime';
-import { MAX_RESOURCE_BYTES } from '../../client/src/resource-limits';
+import { blossomBytes, downloadBytes, readBytes } from '#client/bytes';
+import { resourceMime } from '#client/resource-mime';
+import { MAX_RESOURCE_BYTES } from '#client/resource-limits';
 import { z } from 'zod';
 import { sha256 } from '@noble/hashes/sha2.js';
 import { bytesToHex } from '@noble/hashes/utils.js';
-import { redactDiagnostic } from '../../diagnostics/src';
+import { redactDiagnostic } from '#diagnostics';
 import { HOST_REQUESTS, RUNTIME_DOMAINS } from './capabilities';
 import { scopedStorage } from './storage';
 import { NappletFiles, type ExportFile, type FilePick } from './filesystem';
 import { NappletActions } from './action-session';
 import { NappletUploads } from './upload-session';
 import { NappletAppData, appDataPolicy } from './app-data-session';
-import { APP_DATA_KIND } from '../../app-data/src/app-data-contract';
+import { APP_DATA_KIND } from '#app-data/app-data-contract';
 import { NappletOutbox } from './outbox-session';
 import { NappletMapPublication, isMapPublication } from './map-publication-session';
 import { intentMessageBytes, type IntentWorkspace } from './intent-session';
 import type { HostSign } from './action-contracts';
-import { PlaybackNostr } from '../../nostr/src/playback';
+import { PlaybackNostr } from '#nostr/playback';
 import { WorkQueue } from './work-queue';
 import { NappletKeys } from './keys-session';
 import { NappletConfig } from './config-session';
 import { NappletMedia } from './media-session';
 import { NappletBackend, transportSigner } from './backend-session';
 import { NappletWebrtc } from './webrtc-session';
-import { rtcConfiguration, type BackendProvider } from '../../multiplayer/src/client';
+import { rtcConfiguration, type BackendProvider } from '#multiplayer/client';
 import {
   multiplayerPermission,
   saveMultiplayerPermission,

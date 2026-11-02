@@ -5,7 +5,7 @@ import { createDefer } from 'applesauce-core/promise';
 import { from, lastValueFrom } from 'rxjs';
 import type { EventTemplate, NostrEvent } from 'nostr-tools';
 import { bytesToHex, hexToBytes } from '@noble/hashes/utils.js';
-import { verifiedEvent, type SignedEvent } from '../../protocol/src';
+import { verifiedEvent, type SignedEvent } from '#protocol';
 import { studioSigningKinds } from './studio-channel';
 
 export type Network = 'public' | 'local';

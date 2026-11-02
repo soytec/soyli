@@ -1,5 +1,5 @@
-import { blossomBytes, readBytes } from '../../client/src/bytes';
-import { MAX_READ_ARTIFACT_BYTES, sha256 } from '../../protocol/src/artifact';
+import { blossomBytes, readBytes } from '#client/bytes';
+import { MAX_READ_ARTIFACT_BYTES, sha256 } from '#protocol/artifact';
 
 export const PLAYER_SANDBOX = 'allow-scripts';
 export const PLAYER_CSP =

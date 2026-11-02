@@ -1,9 +1,9 @@
 import { z } from 'zod';
 import { type NostrEvent } from 'nostr-tools';
-import { verifySignature } from '../../protocol/src/verify';
+import { verifySignature } from '#protocol/verify';
 import { ApplesauceRelayPool } from '@contextvm/sdk/relay';
 import type { PrivateKeySigner } from '@contextvm/sdk/signer';
-import { sha256 } from '../../protocol/src/artifact';
+import { sha256 } from '#protocol/artifact';
 import { peerDiagnostics } from './webrtc-diagnostics';
 
 const hex = z.string().regex(/^[a-f0-9]{64}$/);

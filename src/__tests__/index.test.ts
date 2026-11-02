@@ -3,8 +3,8 @@ import { mkdir, mkdtemp, readdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import pins from '../../vendor/toolchain.json';
-import { sourceGit } from '../../packages/grasp/src/client';
-import { encodeAddress } from '../../packages/protocol/src';
+import { sourceGit } from '#grasp/client';
+import { encodeAddress } from '#protocol';
 
 const command = process.env.SPACE_TEST_CLI
   ? [process.env.SPACE_TEST_CLI]

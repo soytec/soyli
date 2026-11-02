@@ -1,5 +1,5 @@
 import { matchFilters, type NostrEvent, type Filter } from 'nostr-tools';
-import { verifySignature } from '../../protocol/src/verify';
+import { verifySignature } from '#protocol/verify';
 import { z } from 'zod';
 
 /** Bounded loopback-only preview relay. Production and full-stack dev use Khatru. */

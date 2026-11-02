@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { verifiedEvent, type SignedEvent } from '../../protocol/src';
+import { verifiedEvent, type SignedEvent } from '#protocol';
 import { readRelayUrl } from './relay-policy';
 
 const hex = z.string().regex(/^[a-f0-9]{64}$/);

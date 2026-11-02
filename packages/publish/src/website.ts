@@ -1,6 +1,6 @@
-import { encodeAddress } from '../../protocol/src';
-import { validateManifest, validateRelease } from '../../protocol/src/manifest';
-import { publicationReceiptSchema } from '../../protocol/src/publication';
+import { encodeAddress } from '#protocol';
+import { validateManifest, validateRelease } from '#protocol/manifest';
+import { publicationReceiptSchema } from '#protocol/publication';
 import type { PublishJob } from './journal';
 
 export type WebsiteCheck = {

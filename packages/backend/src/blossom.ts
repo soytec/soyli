@@ -2,7 +2,7 @@ import { request } from 'node:https';
 import { lookup } from 'node:dns';
 import type { LookupFunction } from 'node:net';
 import ipaddr from 'ipaddr.js';
-import { MAX_ARTIFACT_BYTES, MAX_READ_ARTIFACT_BYTES, sha256 } from '../../protocol/src';
+import { MAX_ARTIFACT_BYTES, MAX_READ_ARTIFACT_BYTES, sha256 } from '#protocol';
 import { fetchPublicBytesInNode } from './public-http-node';
 
 export function publicIp(address: string) {

@@ -1,13 +1,13 @@
-import { diagnose, formatDiagnostic } from '../packages/diagnostics/src';
+import { diagnose, formatDiagnostic } from '#diagnostics';
 import { z } from 'zod';
-import { Accounts, captureAccount } from '../packages/identity/src/accounts';
-import { checkpoint } from '../packages/publish/src/git-source';
-import { publicationStatus, type PublishOptions } from '../packages/publish/src';
-import { Journal } from '../packages/publish/src/journal';
-import { readBinding } from '../packages/publish/src/binding';
-import { inspectProject, type PublishPlan } from '../packages/publish/src/project';
-import { sha256 } from '../packages/protocol/src';
-import { pushSource, type CollaborationOptions } from '../packages/collaboration/src/service';
+import { Accounts, captureAccount } from '#identity/accounts';
+import { checkpoint } from '#publish/git-source';
+import { publicationStatus, type PublishOptions } from '#publish';
+import { Journal } from '#publish/journal';
+import { readBinding } from '#publish/binding';
+import { inspectProject, type PublishPlan } from '#publish/project';
+import { sha256 } from '#protocol';
+import { pushSource, type CollaborationOptions } from '#collaboration/service';
 import { manageProject } from './manager';
 import { workingTree, workingDiff } from './workshop-git';
 import {

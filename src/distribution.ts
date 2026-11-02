@@ -2,7 +2,7 @@ import { dirname, join } from 'node:path';
 import { realpathSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { release as kernelRelease } from 'node:os';
-import { AccountError } from '../packages/identity/src/signer';
+import { AccountError } from '#identity/signer';
 import release from '../distribution/version.json';
 
 declare const NAPPLET_STANDALONE: boolean | undefined;

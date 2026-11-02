@@ -2,9 +2,9 @@ import { expect, test } from 'bun:test';
 import { mkdtemp, readlink, rm, symlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { Accounts, type Vault } from '../../packages/identity/src/accounts';
-import { checkpoint } from '../../packages/publish/src/git-source';
-import { sourceGit } from '../../packages/grasp/src/client';
+import { Accounts, type Vault } from '#identity/accounts';
+import { checkpoint } from '#publish/git-source';
+import { sourceGit } from '#grasp/client';
 import { createWorkshop, type Workshop } from '../workshop';
 import { workingTree, workingDiff } from '../workshop-git';
 

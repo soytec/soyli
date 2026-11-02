@@ -1,5 +1,5 @@
-import { blossomAuthorization, readBounded, verifyBlob } from '../../blossom/src/client';
-import type { CreatorSigner } from '../../identity/src/signer';
+import { blossomAuthorization, readBounded, verifyBlob } from '#blossom/client';
+import type { CreatorSigner } from '#identity/signer';
 
 export async function ownedBlobs(
   origin: string,

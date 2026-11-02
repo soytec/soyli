@@ -1,6 +1,6 @@
 import { fileURLToPath } from 'node:url';
 import { resolve } from 'node:path';
-import { DiagnosticError, ToolOutput } from '../../diagnostics/src';
+import { DiagnosticError, ToolOutput } from '#diagnostics';
 
 const bundles = new Map<string, Promise<string>>();
 

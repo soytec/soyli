@@ -3,15 +3,15 @@ import { mkdtemp, mkdir, rm, readFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { tmpdir } from 'node:os';
 import { generateSecretKey, getPublicKey, finalizeEvent, nip19 } from 'nostr-tools';
-import { sourceGit } from '../../packages/grasp/src/client';
+import { sourceGit } from '#grasp/client';
 import { PrivateKeySigner } from '@contextvm/sdk/signer';
-import { CvmConnection } from '../../packages/multiplayer/src/client';
-import { BackendAccount } from '../../packages/runtime/src/backend-account';
-import { NappletBackend } from '../../packages/runtime/src/backend-session';
+import { CvmConnection } from '#multiplayer/client';
+import { BackendAccount } from '#runtime/backend-account';
+import { NappletBackend } from '#runtime/backend-session';
 import { backendProject, localBackend } from '../backend';
-import { startBackend } from '../../packages/multiplayer/src/service';
+import { startBackend } from '#multiplayer/service';
 import { initModule, moduleCommand } from '../dynamic-backend';
-import type { Account } from '../../packages/identity/src/accounts';
+import type { Account } from '#identity/accounts';
 
 const entry = resolve(import.meta.dir, '../index.ts');
 async function cli(root: string, ...args: string[]) {

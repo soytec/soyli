@@ -1,5 +1,5 @@
-import { legacySnapshotAddress, validateManifest } from '../../protocol/src/manifest';
-import { aggregateHash, identityAddress } from '../../protocol/src';
+import { legacySnapshotAddress, validateManifest } from '#protocol/manifest';
+import { aggregateHash, identityAddress } from '#protocol';
 import { missingDomains } from './capabilities';
 
 /** The same signed manifest determines playback permissions for every catalog source. */

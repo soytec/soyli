@@ -1,8 +1,8 @@
-import { DiagnosticError, ToolOutput } from '../../diagnostics/src';
+import { DiagnosticError, ToolOutput } from '#diagnostics';
 import { RelayPool } from 'applesauce-relay';
 import { lastValueFrom, toArray } from 'rxjs';
 import { nip19, type EventTemplate } from 'nostr-tools';
-import { verifiedEvent, type SignedEvent } from '../../protocol/src';
+import { verifiedEvent, type SignedEvent } from '#protocol';
 
 export type SourceSigner = {
   getPublicKey(): Promise<string>;

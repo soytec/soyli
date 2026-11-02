@@ -1,4 +1,4 @@
-import { MAX_SOURCE_FILES } from '../../publish/src/limits';
+import { MAX_SOURCE_FILES } from '#publish/limits';
 
 /** Bounded Git tar reader. Never delegate untrusted extraction to tar or a shell. */
 export function sourceArchive(bytes: Uint8Array) {

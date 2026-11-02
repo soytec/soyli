@@ -1,8 +1,8 @@
 import { z } from 'zod';
 import ipaddr from 'ipaddr.js';
 import type { Filter } from 'nostr-tools';
-import { DiagnosticError, diagnose, type Diagnostic } from '../../diagnostics/src';
-import { verifiedEvent, type SignedEvent } from '../../protocol/src';
+import { DiagnosticError, diagnose, type Diagnostic } from '#diagnostics';
+import { verifiedEvent, type SignedEvent } from '#protocol';
 import discoveryRelays from '../discovery-relays.json';
 
 export const MAX_RELAY_URL = 256;

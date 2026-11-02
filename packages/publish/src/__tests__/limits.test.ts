@@ -2,7 +2,7 @@ import { expect, test } from 'bun:test';
 import { mkdtemp, rm, symlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { sourceGit } from '../../../grasp/src/client';
+import { sourceGit } from '#grasp/client';
 
 const command = process.env.SPACE_TEST_CLI
   ? [process.env.SPACE_TEST_CLI]

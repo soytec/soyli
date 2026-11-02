@@ -4,7 +4,7 @@ import {
   canonical,
   moduleRef,
   reference,
-} from '../../dynamic-backends/src/contracts';
+} from '#dynamic-backends/contracts';
 import type { HostSign } from './action-contracts';
 import { signExact } from './action-session';
 

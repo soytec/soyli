@@ -1,8 +1,9 @@
 import { z } from 'zod';
 import { type Filter } from 'nostr-tools';
-import { verifiedEvent, type SignedEvent } from '../../protocol/src';
-import { queryEvents, publishEvent } from '../../client/src/nostr';
-import { DiagnosticError, redactDiagnostic } from '../../diagnostics/src';
+import { verifiedEvent, type SignedEvent } from '#protocol';
+import { readComplete, readEvents, publishFirst } from '#client/nostr';
+import { readRelays } from '#nostr/relay-policy';
+import { DiagnosticError, redactDiagnostic } from '#diagnostics';
 import {
   LIST_SUPPORT,
   listMutationSchema,
@@ -83,8 +84,10 @@ export class NappletActions {
   ) {
     this.io = options.io ?? {
       query: (filters, signal, complete) =>
-        queryEvents(filters, { relays: options.relays, signal, requireComplete: complete }),
-      publish: (event, signal) => publishEvent(event, { relays: options.relays, signal }),
+        complete
+          ? readComplete(readRelays(options.relays), filters, signal)
+          : readEvents(readRelays(options.relays), filters, signal),
+      publish: (event, signal) => publishFirst(readRelays(options.relays), event, signal),
     };
   }
   close() {

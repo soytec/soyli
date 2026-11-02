@@ -4,14 +4,14 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { generateSecretKey, getPublicKey, finalizeEvent } from 'nostr-tools';
 import { backendProject, syncBackend } from '../backend';
-import { startBackend } from '../../packages/multiplayer/src/service';
-import { startLocalBackendRelay } from '../../packages/multiplayer/src/local-relay';
-import type { Accounts, Account } from '../../packages/identity/src/accounts';
-import { encodeAddress } from '../../packages/protocol/src';
+import { startBackend } from '#multiplayer/service';
+import { startLocalBackendRelay } from '#multiplayer/local-relay';
+import type { Accounts, Account } from '#identity/accounts';
+import { encodeAddress } from '#protocol';
 import { CallToolRequestSchema } from '@modelcontextprotocol/sdk/types.js';
 import { initModule } from '../dynamic-backend';
-import { writeBinding } from '../../packages/publish/src/binding';
-import { checkSource } from '../../packages/publish/src/project';
+import { writeBinding } from '#publish/binding';
+import { checkSource } from '#publish/project';
 
 async function cli(directory: string, ...args: string[]) {
   const child = Bun.spawn(

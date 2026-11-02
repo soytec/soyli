@@ -1,18 +1,18 @@
-import { prepareAppliedStatuses, deliverAppliedStatuses } from '../../collaboration/src/applied';
-import { repositoryFromEvent, tag, type readProposals } from '../../collaboration/src/protocol';
-import { isManifestMigration } from '../../migration/src';
-import { diagnose, redactDiagnostic } from '../../diagnostics/src';
-import { parseAssets, ASSET_LOCK } from '../../assets/src';
-import { inspectPreviewVideo, MAX_VIDEO_BYTES } from '../../protocol/src/preview-video';
+import { prepareAppliedStatuses, deliverAppliedStatuses } from '#collaboration/applied';
+import { repositoryFromEvent, tag, type readProposals } from '#collaboration/protocol';
+import { isManifestMigration } from '#migration';
+import { diagnose, redactDiagnostic } from '#diagnostics';
+import { parseAssets, ASSET_LOCK } from '#assets';
+import { inspectPreviewVideo, MAX_VIDEO_BYTES } from '#protocol/preview-video';
 import { join } from 'node:path';
 import { realpath, rm } from 'node:fs/promises';
-import { Accounts, captureAccount } from '../../identity/src/accounts';
+import { Accounts, captureAccount } from '#identity/accounts';
 import {
   publishingKinds,
   checkPubkey,
   type CreatorSigner,
   type Network,
-} from '../../identity/src/signer';
+} from '#identity/signer';
 import {
   aggregateHash,
   encodeAddress,
@@ -20,10 +20,10 @@ import {
   sha256,
   verifiedEvent,
   type SignedEvent,
-} from '../../protocol/src';
-import { validateManifest, validateRelease } from '../../protocol/src/manifest';
-import { prepareSource, publishSource, sourceGit, sourceUrls } from '../../grasp/src/client';
-import { uploadBlob } from '../../blossom/src/client';
+} from '#protocol';
+import { validateManifest, validateRelease } from '#protocol/manifest';
+import { prepareSource, publishSource, sourceGit, sourceUrls } from '#grasp/client';
+import { uploadBlob } from '#blossom/client';
 import type { EventTemplate } from 'nostr-tools';
 import { PublishError, projectSchema, resolveTargets, type Targets } from './config';
 import { Journal, type PublishJob } from './journal';
@@ -36,12 +36,12 @@ import {
   type PublishPlan,
 } from './project';
 import { PublicationRelays } from './relay';
-import { copyPublication } from '../../nostr/src/publication-copies';
+import { copyPublication } from '#nostr/publication-copies';
 import { ownedBlobs, verifiedBlob } from './blobs';
 import { confirmWebsite } from './website';
 import { executableBytes } from './artifact';
 import { committedSource, inspectHistory, SourceHistoryError } from './git-source';
-import { repositoryRef } from '../../collaboration/src/protocol';
+import { repositoryRef } from '#collaboration/protocol';
 import {
   loadRepository,
   RepositoryError,
@@ -50,7 +50,7 @@ import {
   type SelectedRepository,
 } from './repository';
 
-import { MANIFEST_PRESENTATION_PROFILE } from '../../protocol/src/presentation';
+import { MANIFEST_PRESENTATION_PROFILE } from '#protocol/presentation';
 
 export { PublishError } from './config';
 type RelayOperations = Pick<PublicationRelays, 'latest' | 'ensure' | 'close'> &

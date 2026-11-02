@@ -3,17 +3,17 @@ import { z } from 'zod';
 import { sha256 } from '@noble/hashes/sha2.js';
 import { bytesToHex } from '@noble/hashes/utils.js';
 import { matchFilters } from 'nostr-tools';
-import { queryEvents } from '../../client/src/nostr';
-import { verifiedEvent, type SignedEvent } from '../../protocol/src';
-import { readRelayUrl } from '../../nostr/src/relay-policy';
-import { redactDiagnostic } from '../../diagnostics/src';
+import { readComplete } from '#client/nostr';
+import { verifiedEvent, type SignedEvent } from '#protocol';
+import { readRelays, readRelayUrl } from '#nostr/relay-policy';
+import { redactDiagnostic } from '#diagnostics';
 import {
   APP_DATA_PROFILE,
   APP_DATA_KIND,
   APP_DATA_MAX_BYTES,
   decodeDataRecord,
   type DataPolicy,
-} from '../../app-data/src/app-data-contract';
+} from '#app-data/app-data-contract';
 import { signExact, type ActionConsent, type ActionIO } from './action-session';
 import type { HostSign } from './action-contracts';
 
@@ -170,8 +170,7 @@ export class NappletAppData {
       const io =
         this.options.io ??
         ({
-          query: (filters, signal, requireComplete) =>
-            queryEvents(filters, { relays, signal, requireComplete }),
+          query: (filters, signal) => readComplete(readRelays(relays), filters, signal),
           publish: async (event, s) => {
             const results = await Promise.allSettled(
               relays.map((relay) => publisher.publish(relay, event, s)),

@@ -1,8 +1,8 @@
 import { Database } from 'bun:sqlite';
 import { type NostrEvent, type EventTemplate } from 'nostr-tools';
-import { verifySignature } from '../../protocol/src/verify';
+import { verifySignature } from '#protocol/verify';
 import { z } from 'zod';
-import { diagnose, redactDiagnostic } from '../../diagnostics/src';
+import { diagnose, redactDiagnostic } from '#diagnostics';
 import {
   ABI,
   PROFILE,

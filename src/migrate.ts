@@ -4,15 +4,15 @@ import {
   captureAccount,
   outsideRepository,
   type Accounts,
-} from '../packages/identity/src/accounts';
-import type { CreatorSigner, Network } from '../packages/identity/src/signer';
-import { defaultTargets } from '../packages/publish/src/config';
-import { Journal, atomicJson, readJson } from '../packages/publish/src/journal';
-import { discoveryTarget } from '../packages/protocol/src/discovery';
-import { identityAddress, sha256 } from '../packages/protocol/src';
-import { validateManifest } from '../packages/protocol/src/manifest';
-import { LifecycleTransport } from '../packages/lifecycle/src/transport';
-import { lifecycleEndpoint } from '../packages/lifecycle/src';
+} from '#identity/accounts';
+import type { CreatorSigner, Network } from '#identity/signer';
+import { defaultTargets } from '#publish/config';
+import { Journal, atomicJson, readJson } from '#publish/journal';
+import { discoveryTarget } from '#protocol/discovery';
+import { identityAddress, sha256 } from '#protocol';
+import { validateManifest } from '#protocol/manifest';
+import { LifecycleTransport } from '#lifecycle/transport';
+import { lifecycleEndpoint } from '#lifecycle';
 import {
   executeMigration,
   copyMigratedManifest,
@@ -21,11 +21,11 @@ import {
   migrationToken,
   planMigration,
   type MigrationReceipt,
-} from '../packages/migration/src';
-import { DiagnosticError, formatDiagnostic } from '../packages/diagnostics/src';
+} from '#migration';
+import { DiagnosticError, formatDiagnostic } from '#diagnostics';
 import { ask } from './input';
-import { PublicationRelays } from '../packages/publish/src/relay';
-import { outboxReport } from '../packages/publish/src/outbox-report';
+import { PublicationRelays } from '#publish/relay';
+import { outboxReport } from '#publish/outbox-report';
 
 export async function migrateCommand(options: {
   reference: string;

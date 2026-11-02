@@ -1,28 +1,28 @@
 import { mkdir, writeFile, lstat } from 'node:fs/promises';
 import { join } from 'node:path';
 import { PrivateKeySigner } from '@contextvm/sdk/signer';
-import { captureAccount, type Accounts } from '../packages/identity/src/accounts';
-import type { Network, SignerOptions } from '../packages/identity/src/signer';
-import { DiagnosticError } from '../packages/diagnostics/src';
-import { regularFile } from '../packages/publish/src/project';
-import { committedSource } from '../packages/publish/src/git-source';
+import { captureAccount, type Accounts } from '#identity/accounts';
+import type { Network, SignerOptions } from '#identity/signer';
+import { DiagnosticError } from '#diagnostics';
+import { regularFile } from '#publish/project';
+import { committedSource } from '#publish/git-source';
 import {
   projectIdentity,
   projectRepositoryReference,
   resolveTargets,
-} from '../packages/publish/src/config';
-import { selectRepository } from '../packages/publish/src/repository';
-import { sourceUrls } from '../packages/grasp/src/client';
-import { CvmConnection } from '../packages/multiplayer/src/client';
+} from '#publish/config';
+import { selectRepository } from '#publish/repository';
+import { sourceUrls } from '#grasp/client';
+import { CvmConnection } from '#multiplayer/client';
 import {
   ABI,
   PROFILE,
   manifestSchema,
   canonical,
   authorizationTemplate,
-} from '../packages/dynamic-backends/src/contracts';
-import { buildArtifact, type BuildInput } from '../packages/dynamic-backends/src/build';
-import { readModule } from '../packages/dynamic-backends/src/module-source';
+} from '#dynamic-backends/contracts';
+import { buildArtifact, type BuildInput } from '#dynamic-backends/build';
+import { readModule } from '#dynamic-backends/module-source';
 import { backendProject, resolveBackendProvider } from './backend';
 
 export async function localModule(directory: string, path: string): Promise<BuildInput> {

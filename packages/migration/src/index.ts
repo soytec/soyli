@@ -7,20 +7,20 @@ import {
   MAX_READ_ARTIFACT_BYTES,
   verifiedEvent,
   type SignedEvent,
-} from '../../protocol/src';
-import { discoveryTarget } from '../../protocol/src/discovery';
-import { validateManifest } from '../../protocol/src/manifest';
-import { readBytes } from '../../client/src/bytes';
-import { lifecycleEndpoint } from '../../lifecycle/src';
-import type { LifecycleIO, LifecycleSigner } from '../../lifecycle/src/transport';
-import { DiagnosticError, diagnose, formatDiagnostic } from '../../diagnostics/src';
+} from '#protocol';
+import { discoveryTarget } from '#protocol/discovery';
+import { validateManifest } from '#protocol/manifest';
+import { readBytes } from '#client/bytes';
+import { lifecycleEndpoint } from '#lifecycle';
+import type { LifecycleIO, LifecycleSigner } from '#lifecycle/transport';
+import { DiagnosticError, diagnose, formatDiagnostic } from '#diagnostics';
 import { z } from 'zod';
 import {
   outboxSchema,
   copyHistorySchema,
   copyPublication,
   type CopyIO,
-} from '../../nostr/src/publication-copies';
+} from '#nostr/publication-copies';
 
 /** Convert wire metadata only. Optional source/media tags keep their exact values.
  * Snapshot self-addresses cannot be converted into independent snapshot identity. */

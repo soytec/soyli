@@ -1,4 +1,4 @@
-import { sha256 } from '../../protocol/src';
+import { sha256 } from '#protocol';
 
 /** An explicit reuse decision applies only to the reviewed build and clip bytes. */
 export async function videoMatchesBuild(

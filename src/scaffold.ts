@@ -1,11 +1,11 @@
-import { DiagnosticError } from '../packages/diagnostics/src';
-import { sourceGit } from '../packages/grasp/src/client';
-import { projectPublishingDefaults } from '../packages/publish/src/config';
+import { DiagnosticError } from '#diagnostics';
+import { sourceGit } from '#grasp/client';
+import { projectPublishingDefaults } from '#publish/config';
 import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { requireGit } from './prerequisites';
-import { AccountError } from '../packages/identity/src/signer';
-import { examples, exampleHtml } from '../packages/examples/artifact';
+import { AccountError } from '#identity/signer';
+import { examples, exampleHtml } from '#examples/artifact';
 import { boilerplateFiles, installCreatorSkills, upstream } from './creator-kit';
 
 export class ScaffoldInputError extends Error {}

@@ -1,8 +1,9 @@
-import { queryEvents, publishEvent, type NostrOptions } from '../../client/src/nostr';
-import { DiagnosticError } from '../../diagnostics/src';
-import { sourceGit } from '../../grasp/src/client';
-import type { CreatorSigner } from '../../identity/src/signer';
-import { verifiedEvent, type SignedEvent } from '../../protocol/src';
+import { readEvents, publishFirst } from '#client/nostr';
+import { readRelays } from '#nostr/relay-policy';
+import { DiagnosticError } from '#diagnostics';
+import { sourceGit } from '#grasp/client';
+import type { CreatorSigner } from '#identity/signer';
+import { verifiedEvent, type SignedEvent } from '#protocol';
 import { readProposals, tag, type Repository, type Proposal } from './protocol';
 
 async function signExact(
@@ -26,7 +27,7 @@ async function signExact(
 }
 export async function prepareAppliedStatuses(input: {
   directory: string;
-  nostr: NostrOptions;
+  nostr: { relays: string[]; signal?: AbortSignal };
   readProposals?: typeof readProposals;
   repository: Repository;
   previous: SignedEvent;
@@ -124,12 +125,11 @@ export async function deliverAppliedStatuses(input: {
         supersededProposals.push(root);
         continue;
       }
-      await publishEvent(event, nostr);
-      if (
-        !(await queryEvents([{ ids: [event.id], limit: 1 }], nostr)).some(
-          (e) => e.id === event.id,
-        )
-      )
+      const relays = readRelays(saved.relays);
+      await publishFirst(relays, event, options.signal);
+      const filters = [{ ids: [event.id], limit: 1 }];
+      const visible = await readEvents(relays, filters, options.signal);
+      if (!visible.some((e) => e.id === event.id))
         throw new Error('Applied status was acknowledged but is not queryable.');
     }
   } catch (cause) {

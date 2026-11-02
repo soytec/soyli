@@ -1,5 +1,5 @@
-import { sourceGit } from '../../grasp/src/client';
-import { DiagnosticError, ToolOutput } from '../../diagnostics/src';
+import { sourceGit } from '#grasp/client';
+import { DiagnosticError, ToolOutput } from '#diagnostics';
 import { BackendError } from './contracts';
 
 export async function blob(

@@ -2,9 +2,9 @@ import { z } from 'zod';
 import { sha256 } from '@noble/hashes/sha2.js';
 import { bytesToHex } from '@noble/hashes/utils.js';
 import { AuthRequiredError, RelayPool } from 'applesauce-relay';
-import { redactDiagnostic } from '../../diagnostics/src';
-import type { SignedEvent } from '../../protocol/src';
-import { outboxPublishOptions } from '../../nostr/src/outbox-routing';
+import { redactDiagnostic } from '#diagnostics';
+import type { SignedEvent } from '#protocol';
+import { outboxPublishOptions } from '#nostr/outbox-routing';
 import { signExact, type ActionConsent } from './action-session';
 import type { HostSign } from './action-contracts';
 

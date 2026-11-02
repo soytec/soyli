@@ -1,11 +1,11 @@
-import { relatedAssetHtml } from '../../assets/src/related';
-import { validateAssets, ASSET_LOCK, ASSET_MODULE, ASSET_TYPES, assetMime } from '../../assets/src';
+import { relatedAssetHtml } from '#assets/related';
+import { validateAssets, ASSET_LOCK, ASSET_MODULE, ASSET_TYPES, assetMime } from '#assets';
 import { constants } from 'node:fs';
 import { lstat, mkdir, open, realpath, rm } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
-import { sha256, MAX_ARTIFACT_BYTES } from '../../protocol/src';
-import { missingDomains } from '../../runtime/src/capabilities';
-import { sourceGit } from '../../grasp/src/client';
+import { sha256, MAX_ARTIFACT_BYTES } from '#protocol';
+import { missingDomains } from '#runtime/capabilities';
+import { sourceGit } from '#grasp/client';
 import {
   projectSchema,
   projectIdentity,
@@ -16,11 +16,11 @@ import {
   PublishError,
   type Targets,
 } from './config';
-import type { Network } from '../../identity/src/signer';
+import type { Network } from '#identity/signer';
 import { builtRequirements } from './artifact';
 import { effectiveProject } from './binding';
 import { committedSource, inspectHistory } from './git-source';
-import { readModule } from '../../dynamic-backends/src/module-source';
+import { readModule } from '#dynamic-backends/module-source';
 import { MAX_SOURCE_FILES } from './limits';
 import { createSourceFileReader } from './source-links';
 import { materializeSourceArchive } from './source-archive';

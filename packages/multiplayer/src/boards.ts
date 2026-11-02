@@ -1,8 +1,8 @@
 import { Database } from 'bun:sqlite';
 import { z } from 'zod';
 import { type NostrEvent } from 'nostr-tools';
-import { verifySignature } from '../../protocol/src/verify';
-import { decodeAddress, identityAddress } from '../../protocol/src';
+import { verifySignature } from '#protocol/verify';
+import { decodeAddress, identityAddress } from '#protocol';
 
 import {
   boardRef,

@@ -19,8 +19,8 @@ import {
   diagnose,
   formatDiagnostic,
   redactDiagnostic,
-} from '../../diagnostics/src';
-import { verifiedEvent, type SignedEvent } from '../../protocol/src';
+} from '#diagnostics';
+import { verifiedEvent, type SignedEvent } from '#protocol';
 import type { PlaybackReadPool } from './playback';
 import { readRelayUrl } from './relay-policy';
 

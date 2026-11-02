@@ -1,22 +1,23 @@
 import { prepareAppliedStatuses, deliverAppliedStatuses } from './applied';
-import { ASSET_LOCK, parseAssets } from '../../assets/src';
-import { DiagnosticError } from '../../diagnostics/src';
+import { ASSET_LOCK, parseAssets } from '#assets';
+import { DiagnosticError } from '#diagnostics';
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { nip19, type EventTemplate } from 'nostr-tools';
 import { join } from 'node:path';
-import { queryEvents, publishEvent, type NostrOptions } from '../../client/src/nostr';
-import { Accounts, captureAccount } from '../../identity/src/accounts';
-import type { Network } from '../../identity/src/signer';
-import { sha256, verifiedEvent, type SignedEvent } from '../../protocol/src';
-import { defaultTargets, projectSchema, resolveTargets } from '../../publish/src/config';
-import { readBinding, effectiveProject } from '../../publish/src/binding';
-import { committedSource } from '../../publish/src/git-source';
-import { durableFile, freezeSource, inspectProject } from '../../publish/src/project';
-import { executableBytes } from '../../publish/src/artifact';
-import { uploadBlob } from '../../blossom/src/client';
-import { sourceGit, sourceUrls } from '../../grasp/src/client';
-import type { PublishOptions } from '../../publish/src';
-import { Journal } from '../../publish/src/journal';
+import { readEvents, publishFirst } from '#client/nostr';
+import { readRelays } from '#nostr/relay-policy';
+import { Accounts, captureAccount } from '#identity/accounts';
+import type { Network } from '#identity/signer';
+import { sha256, verifiedEvent, type SignedEvent } from '#protocol';
+import { defaultTargets, projectSchema, resolveTargets } from '#publish/config';
+import { readBinding, effectiveProject } from '#publish/binding';
+import { committedSource } from '#publish/git-source';
+import { durableFile, freezeSource, inspectProject } from '#publish/project';
+import { executableBytes } from '#publish/artifact';
+import { uploadBlob } from '#blossom/client';
+import { sourceGit, sourceUrls } from '#grasp/client';
+import type { PublishOptions } from '#publish';
+import { Journal } from '#publish/journal';
 import {
   latest,
   proposalId,
@@ -47,7 +48,7 @@ export async function collaborationContext(options: CollaborationOptions) {
   );
   const targets = resolveTargets(project, options.network);
   const account = await (options.accounts ?? new Accounts(options.network)).current();
-  const nostr: NostrOptions = {
+  const nostr = {
     signal: options.signal,
     relays: [
       ...(binding?.upstream?.relays ?? []),
@@ -69,8 +70,8 @@ async function linkedRepository(
   context: Awaited<ReturnType<typeof collaborationContext>>,
 ) {
   if (!context.account) return null;
-  const { selectRepository } = await import('../../publish/src/repository');
-  const { projectRepositoryReference } = await import('../../publish/src/config');
+  const { selectRepository } = await import('#publish/repository');
+  const { projectRepositoryReference } = await import('#publish/config');
   return selectRepository({
     directory: options.directory,
     pubkey: context.account.pubkey,
@@ -78,7 +79,10 @@ async function linkedRepository(
     signal: options.signal,
   });
 }
-export async function projectRepository(options: CollaborationOptions, nostr: NostrOptions) {
+export async function projectRepository(
+  options: CollaborationOptions,
+  nostr: { relays: string[]; signal?: AbortSignal },
+) {
   const binding = await readBinding(options.directory);
   if (binding?.upstream) return readRepository(nostr, binding.upstream.address);
   const context = await collaborationContext(options);
@@ -94,7 +98,7 @@ export async function projectRepository(options: CollaborationOptions, nostr: No
         relays: linked.relays,
       }),
     );
-  const { projectIdentity } = await import('../../publish/src/config');
+  const { projectIdentity } = await import('#publish/config');
   return readRepository(
     nostr,
     sourceUrls(
@@ -532,8 +536,9 @@ export async function proposalAction(
     { nostr, account } = context;
   let signer: Awaited<ReturnType<Accounts['signer']>> | undefined;
   try {
-    const id = proposalId(options.proposal),
-      root = (await queryEvents([{ ids: [id], kinds: [1618, 1617], limit: 1 }], nostr))[0];
+    const id = proposalId(options.proposal);
+    const filters = [{ ids: [id], kinds: [1618, 1617], limit: 1 }];
+    const root = (await readEvents(readRelays(nostr.relays), filters, nostr.signal))[0];
     if (!root) throw new Error('Proposal unavailable.');
     const repository = await readRepository(nostr, tag(root, 'a') ?? '');
     const proposal = (await readProposals(nostr, repository, id)).find((p) => p.root.id === id);
@@ -666,7 +671,7 @@ export async function proposalAction(
       JSON.stringify(event.tags) !== JSON.stringify(template.tags)
     )
       throw new Error('Saved review action changed.');
-    await publishEvent(event, { ...nostr, hints: repository.relays });
+    await publishFirst(readRelays(nostr.relays, repository.relays), event, nostr.signal);
     return { event: event.id, status: options.action };
   } finally {
     await signer?.close();
@@ -701,7 +706,7 @@ export async function pushSource(
         operation: 'share reviewed source',
         recovery: 'Prepare and review the current source before publishing it.',
       });
-    const { inspectHistory } = await import('../../publish/src/git-source');
+    const { inspectHistory } = await import('#publish/git-source');
     await inspectHistory(options.directory, commit);
     const branch = await sourceGit(options.directory, ['symbolic-ref', '--short', 'HEAD']);
     const ref = `refs/heads/${branch}`;

@@ -1,4 +1,4 @@
-import { verifiedEvent, type SignedEvent } from '../../protocol/src';
+import { verifiedEvent, type SignedEvent } from '#protocol';
 
 export const BLOSSOM_SPEC = 'b5bd2801d1763aa635fc8fea7a76597e0eb18990';
 export const HASH = /^[a-f0-9]{64}$/;

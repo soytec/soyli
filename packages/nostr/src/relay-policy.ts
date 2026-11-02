@@ -50,3 +50,14 @@ export function readRelayUrl(value: string, configured: string[] = [], browser =
     return local;
   }
 }
+
+/** Untrusted hints cannot grant access to loopback relays; only configuration can. */
+export function readRelays(configured: string[], hints: string[] = []) {
+  return [...new Set([...hints, ...configured].flatMap((value) => {
+    try {
+      return [readRelayUrl(value, configured, true)];
+    } catch {
+      return [];
+    }
+  }))].slice(0, 8);
+}

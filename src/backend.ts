@@ -1,27 +1,27 @@
-import { DiagnosticError, diagnose, formatDiagnostic } from '../packages/diagnostics/src';
-import { effectiveProject, readBinding, writeBinding } from '../packages/publish/src/binding';
+import { DiagnosticError, diagnose, formatDiagnostic } from '#diagnostics';
+import { effectiveProject, readBinding, writeBinding } from '#publish/binding';
 import { join } from 'node:path';
 import { mkdir, writeFile, rename, rm } from 'node:fs/promises';
 import { PrivateKeySigner } from '@contextvm/sdk/signer';
-import { Accounts, captureAccount } from '../packages/identity/src/accounts';
-import type { CreatorSigner, Network } from '../packages/identity/src/signer';
-import { encodeAddress } from '../packages/protocol/src';
+import { Accounts, captureAccount } from '#identity/accounts';
+import type { CreatorSigner, Network } from '#identity/signer';
+import { encodeAddress } from '#protocol';
 import {
   projectSchema,
   projectIdentity,
   resolveTargets,
-} from '../packages/publish/src/config';
-import { regularFile } from '../packages/publish/src/project';
+} from '#publish/config';
+import { regularFile } from '#publish/project';
 import {
   CvmConnection,
   validateProvider,
   type BackendProvider,
-} from '../packages/multiplayer/src/client';
-import { boardAuthorization } from '../packages/multiplayer/src/contracts';
-import { startBackend } from '../packages/multiplayer/src/service';
-import { startLocalBackendRelay } from '../packages/multiplayer/src/local-relay';
+} from '#multiplayer/client';
+import { boardAuthorization } from '#multiplayer/contracts';
+import { startBackend } from '#multiplayer/service';
+import { startLocalBackendRelay } from '#multiplayer/local-relay';
 import { localModule } from './dynamic-backend';
-import { manifestSchema } from '../packages/dynamic-backends/src/contracts';
+import { manifestSchema } from '#dynamic-backends/contracts';
 
 export const developmentAuthor = '79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798';
 async function publicFile(path: string, bytes: Uint8Array | string) {
@@ -35,7 +35,7 @@ async function publicFile(path: string, bytes: Uint8Array | string) {
 }
 async function saveBackendConfiguration(
   directory: string,
-  config: import('../packages/publish/src/config').Project,
+  config: import('#publish/config').Project,
 ) {
   // Module/board declarations and the provider are portable public configuration.
   // The creator choice remains local so contributions do not change authorship.

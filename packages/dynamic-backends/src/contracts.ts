@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { sha256 } from '@noble/hashes/sha2.js';
 import { bytesToHex } from '@noble/hashes/utils.js';
-import { decodeAddress, identityAddress, encodeAddress } from '../../protocol/src';
+import { decodeAddress, identityAddress, encodeAddress } from '#protocol';
 
 export const PROFILE = 'soy-ts-quickjs-v1' as const;
 export const ABI = 'soy-handler-v1' as const;

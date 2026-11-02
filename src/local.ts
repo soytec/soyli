@@ -1,11 +1,11 @@
-import { diagnose, DiagnosticError, formatDiagnostic } from '../packages/diagnostics/src';
-import { dangerousFileKeystore } from '../packages/identity/src/accounts';
+import { diagnose, DiagnosticError, formatDiagnostic } from '#diagnostics';
+import { dangerousFileKeystore } from '#identity/accounts';
 import { realpath } from 'node:fs/promises';
 import { pathToFileURL } from 'node:url';
-import { AccountError, type Network } from '../packages/identity/src/signer';
-import { inspectProject, regularFile } from '../packages/publish/src/project';
-import { effectiveProject } from '../packages/publish/src/binding';
-import { projectSchema } from '../packages/publish/src/config';
+import { AccountError, type Network } from '#identity/signer';
+import { inspectProject, regularFile } from '#publish/project';
+import { effectiveProject } from '#publish/binding';
+import { projectSchema } from '#publish/config';
 import { browserCompatibilityNote, browserEngine, browserInstalled } from './browser';
 import { checkPublication } from './publish-check';
 import { previewAssets } from './preview/assets';

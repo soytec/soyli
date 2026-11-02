@@ -1,12 +1,12 @@
-import { videoInfoSchema, MAX_VIDEO_BYTES } from '../../protocol/src/preview-video';
+import { videoInfoSchema, MAX_VIDEO_BYTES } from '#protocol/preview-video';
 import { Database } from 'bun:sqlite';
 import { constants } from 'node:fs';
 import { chmod, lstat, mkdir, open, rename, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { z } from 'zod';
-import { eventSchema } from '../../protocol/src';
-import { remixSchema } from '../../protocol/src/remix';
-import type { Network } from '../../identity/src/signer';
+import { eventSchema } from '#protocol';
+import { remixSchema } from '#protocol/remix';
+import type { Network } from '#identity/signer';
 import { PublishError, targetsSchema, intentSchema } from './config';
 import { MAX_SOURCE_FILES, MAX_PUBLICATION_JOURNAL_BYTES } from './limits';
 import { checkReportSchema } from './check-report';
@@ -14,14 +14,14 @@ import {
   MANIFEST_PRESENTATION_PROFILE,
   manifestScreenshots,
   manifestPreviewVideo,
-} from '../../protocol/src/presentation';
+} from '#protocol/presentation';
 
 const hash = z.string().regex(/^[a-f0-9]{64}$/);
 import {
   copyErrorSchema as copyError,
   outboxSchema,
   copyHistorySchema,
-} from '../../nostr/src/publication-copies';
+} from '#nostr/publication-copies';
 const commit = z.string().regex(/^[a-f0-9]{40}$/);
 const planSchema = z
   .object({

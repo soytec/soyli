@@ -2,7 +2,7 @@ import { tmpdir } from 'node:os';
 import { mkdir, writeFile, rmdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { BackendError } from './contracts';
-import { ToolOutput } from '../../diagnostics/src';
+import { ToolOutput } from '#diagnostics';
 
 /** Bounded line framing. Never accumulate an unbounded line from a broken worker. */
 export async function* jsonLines(stream: ReadableStream<Uint8Array>, maximum: number) {

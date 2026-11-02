@@ -3,7 +3,7 @@ import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { inspectWasm } from '../rust-build';
-import { checkSource, inspectProject } from '../../packages/publish/src/project';
+import { checkSource, inspectProject } from '#publish/project';
 const cli = process.env.SPACE_TEST_CLI
   ? [process.env.SPACE_TEST_CLI]
   : [process.execPath, new URL('../index.ts', import.meta.url).pathname];

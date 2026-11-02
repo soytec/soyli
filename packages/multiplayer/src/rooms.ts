@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { decodeAddress, identityAddress } from '../../protocol/src';
+import { decodeAddress, identityAddress } from '#protocol';
 
 export const roomNamespace = z.object({
   napplet: z.string().max(4096),

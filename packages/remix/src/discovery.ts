@@ -1,10 +1,10 @@
-import { DiagnosticError, type Diagnostic } from '../../diagnostics/src';
-import { publicNodeWorker } from '../../backend/src/public-node-worker';
+import { DiagnosticError, type Diagnostic } from '#diagnostics';
+import { publicNodeWorker } from '#backend/public-node-worker';
 import { matchFilters, type Filter } from 'nostr-tools';
 import { fromEvent, take, takeUntil, takeWhile } from 'rxjs';
-import { openPlaybackRelay } from '../../backend/src/relay-tunnel';
-import { AccountError } from '../../identity/src/signer';
-import { verifiedEvent, type SignedEvent } from '../../protocol/src';
+import { openPlaybackRelay } from '#backend/relay-tunnel';
+import { AccountError } from '#identity/signer';
+import { verifiedEvent, type SignedEvent } from '#protocol';
 
 /** Finite, signer-free discovery using the same DNS-pinned Bun transport as playback. */
 export async function discoverRemix(filter: Filter, relays: string[], signal: AbortSignal) {

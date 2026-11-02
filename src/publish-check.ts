@@ -1,4 +1,4 @@
-import { redactDiagnostic } from '../packages/diagnostics/src';
+import { redactDiagnostic } from '#diagnostics';
 import { waitForCapture } from './interactive-capture';
 import { materializePreview } from './frozen-preview';
 import { mkdir, mkdtemp, rm } from 'node:fs/promises';
@@ -8,21 +8,21 @@ import { pathToFileURL } from 'node:url';
 import { previewAssets } from './preview/assets';
 import { browserEngine, installBrowser } from './browser';
 import { startPreviewServer } from './preview/server';
-import { inspectPreviewVideo, MAX_VIDEO_BYTES } from '../packages/protocol/src/preview-video';
-import { sha256 } from '../packages/protocol/src';
-import { regularFile } from '../packages/publish/src/project';
+import { inspectPreviewVideo, MAX_VIDEO_BYTES } from '#protocol/preview-video';
+import { sha256 } from '#protocol';
+import { regularFile } from '#publish/project';
 import {
   PublishError,
   recordingSchema,
   type Recording,
-} from '../packages/publish/src/config';
-import type { CheckReport } from '../packages/publish/src/check-report';
-import { AccountError } from '../packages/identity/src/signer';
-import { RUNTIME_PROFILE } from '../packages/runtime/src/capabilities';
-import { MAX_PREVIEW_BYTES } from '../packages/protocol/src/preview';
+} from '#publish/config';
+import type { CheckReport } from '#publish/check-report';
+import { AccountError } from '#identity/signer';
+import { RUNTIME_PROFILE } from '#runtime/capabilities';
+import { MAX_PREVIEW_BYTES } from '#protocol/preview';
 import { localBackend } from './backend';
-import { builtConfiguration, executableBytes } from '../packages/publish/src/artifact';
-import { videoMatchesBuild } from '../packages/publish/src/media-review';
+import { builtConfiguration, executableBytes } from '#publish/artifact';
+import { videoMatchesBuild } from '#publish/media-review';
 
 /** The host pins the app at (0, 0). Capture those pixels directly: element screenshots
  * add scroll/stability waits that can stall in CPU-constrained capture workers. */

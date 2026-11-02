@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { verifiedEvent, type SignedEvent } from '../../protocol/src';
+import { verifiedEvent, type SignedEvent } from '#protocol';
 
 export const studioSigningKinds = [24242, 30617, 30618, 35129, 15129, 5129, 1618, 1619, 1631];
 export const studioChannel = 'soy-studio-signing/1';

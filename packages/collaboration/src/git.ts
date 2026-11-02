@@ -1,10 +1,10 @@
-import { DiagnosticError } from '../../diagnostics/src';
+import { DiagnosticError } from '#diagnostics';
 import { mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import ipaddr from 'ipaddr.js';
-import { sourceGit } from '../../grasp/src/client';
+import { sourceGit } from '#grasp/client';
 import { commitPattern, type Repository } from './protocol';
-import { committedSource, inspectHistory } from '../../publish/src/git-source';
+import { committedSource, inspectHistory } from '#publish/git-source';
 
 export function cloneUrl(value: string, local = false) {
   const u = new URL(value),

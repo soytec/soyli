@@ -1,10 +1,10 @@
-import { DiagnosticError, ToolOutput } from '../packages/diagnostics/src';
+import { DiagnosticError, ToolOutput } from '#diagnostics';
 import { access, mkdir } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { homedir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { AccountError } from '../packages/identity/src/signer';
+import { AccountError } from '#identity/signer';
 import { browserProfile, playwrightDirectory, standalone } from './distribution';
 import { managedNode } from './toolchain';
 

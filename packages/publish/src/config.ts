@@ -1,11 +1,11 @@
 import { z } from 'zod';
-import { AccountError, type Network } from '../../identity/src/signer';
-import { normalizeTopic } from '../../protocol/src/topics';
-import { checkedEndpoint } from '../../nostr/src/publication-copies';
-export { checkedEndpoint } from '../../nostr/src/publication-copies';
-import { remixSchema } from '../../protocol/src/remix';
-import { backendConfig } from '../../multiplayer/src/contracts';
-import discoveryRelays from '../../nostr/discovery-relays.json';
+import { AccountError, type Network } from '#identity/signer';
+import { normalizeTopic } from '#protocol/topics';
+import { checkedEndpoint } from '#nostr/publication-copies';
+export { checkedEndpoint } from '#nostr/publication-copies';
+import { remixSchema } from '#protocol/remix';
+import { backendConfig } from '#multiplayer/contracts';
+import discoveryRelays from '#nostr/discovery-relays.json';
 import { MAX_SOURCE_FILES } from './limits';
 
 export class PublishError extends AccountError {

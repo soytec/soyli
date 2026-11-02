@@ -1,8 +1,8 @@
 import { RelayPool } from 'applesauce-relay';
 import { matchFilter, type Filter, type EventTemplate } from 'nostr-tools';
 import type { Subscription } from 'rxjs';
-import { verifiedEvent, type SignedEvent } from '../../protocol/src';
-import { DiagnosticError } from '../../diagnostics/src';
+import { verifiedEvent, type SignedEvent } from '#protocol';
+import { DiagnosticError } from '#diagnostics';
 
 export type LifecycleSigner = { signEvent(event: EventTemplate): Promise<SignedEvent> };
 export type LifecycleIO = {

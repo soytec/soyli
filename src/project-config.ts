@@ -1,5 +1,5 @@
-import { sha256 } from '../packages/protocol/src';
-import { effectiveProject, readBinding, writeBinding } from '../packages/publish/src/binding';
+import { sha256 } from '#protocol';
+import { effectiveProject, readBinding, writeBinding } from '#publish/binding';
 import { developmentAuthor } from './backend';
 import { rename, rm, writeFile, lstat } from 'node:fs/promises';
 import { join } from 'node:path';
@@ -11,10 +11,10 @@ import {
   type Project,
   recordingSchema,
   type Recording,
-} from '../packages/publish/src/config';
-import { inspectProject, regularFile } from '../packages/publish/src/project';
-import type { Network } from '../packages/identity/src/signer';
-import { inspectPreviewVideo } from '../packages/protocol/src/preview-video';
+} from '#publish/config';
+import { inspectProject, regularFile } from '#publish/project';
+import type { Network } from '#identity/signer';
+import { inspectPreviewVideo } from '#protocol/preview-video';
 import { checkPublication } from './publish-check';
 
 async function readProject(directory: string) {

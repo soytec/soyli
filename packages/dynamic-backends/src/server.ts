@@ -16,7 +16,7 @@ import {
   purgeSchema,
 } from './contracts';
 import { jsonBytes } from './schema';
-import { diagnose, redactDiagnostic } from '../../diagnostics/src';
+import { diagnose, redactDiagnostic } from '#diagnostics';
 
 export function registerDynamicTools(server: McpServer, service: DynamicBackends) {
   let windowStart = Date.now(),

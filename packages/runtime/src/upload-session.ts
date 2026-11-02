@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { sha256 } from '../../protocol/src/artifact';
-import { downloadBytes, readBytes, resourceUrl } from '../../client/src/bytes';
+import { sha256 } from '#protocol/artifact';
+import { downloadBytes, readBytes, resourceUrl } from '#client/bytes';
 import { signExact, type ActionConsent } from './action-session';
 import type { HostSign } from './action-contracts';
 

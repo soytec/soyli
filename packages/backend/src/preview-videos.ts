@@ -1,16 +1,16 @@
 import { mkdir, rename, readdir, rm } from 'node:fs/promises';
 import { join } from 'node:path';
-import { sha256, type SignedEvent } from '../../protocol/src';
-import { appReferences, latestMetadata } from '../../protocol/src/preview';
+import { sha256, type SignedEvent } from '#protocol';
+import { appReferences, latestMetadata } from '#protocol/preview';
 import {
   descriptorVideos,
   validatedVideo,
   inspectPreviewVideo,
   MAX_VIDEO_BYTES,
   type CachedVideo,
-} from '../../protocol/src/preview-video';
+} from '#protocol/preview-video';
 import { fetchPublicBytes, publicResourceUrl } from './blossom';
-import { manifestVideoSources } from '../../protocol/src/presentation';
+import { manifestVideoSources } from '#protocol/presentation';
 
 type Entry = { manifest: SignedEvent; video?: CachedVideo | null };
 export async function cachedVideoBytes(directory: string, video: CachedVideo) {

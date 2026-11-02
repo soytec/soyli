@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { nip19 } from 'nostr-tools';
-import type { SignedEvent } from '../../protocol/src';
+import type { SignedEvent } from '#protocol';
 
 export type ActionTemplate = Pick<SignedEvent, 'kind' | 'tags' | 'content' | 'created_at'>;
 export type HostSign = (pubkey: string, event: ActionTemplate) => Promise<SignedEvent>;

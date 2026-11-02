@@ -1,10 +1,10 @@
-import { sourceGit } from '../packages/grasp/src/client';
+import { sourceGit } from '#grasp/client';
 import { lstat, readlink } from 'node:fs/promises';
 import { join } from 'node:path';
-import { regularFile, checkSource, MAX_SOURCE_BYTES } from '../packages/publish/src/project';
-import { createSourceFileReader } from '../packages/publish/src/source-links';
-import { MAX_SOURCE_FILES } from '../packages/publish/src/limits';
-import { sha256 } from '../packages/protocol/src';
+import { regularFile, checkSource, MAX_SOURCE_BYTES } from '#publish/project';
+import { createSourceFileReader } from '#publish/source-links';
+import { MAX_SOURCE_FILES } from '#publish/limits';
+import { sha256 } from '#protocol';
 
 /** Snapshot bytes, the index and HEAD: an editor save must invalidate a reviewed action. */
 export async function workingTree(directory: string) {

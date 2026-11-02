@@ -1,10 +1,10 @@
-import { DiagnosticError } from '../../diagnostics/src';
-import { validateAssets, parseAssets, ASSET_LOCK } from '../../assets/src';
-import { relatedAssetHtml } from '../../assets/src/related';
-import { readRepository, repositoryRef } from '../../collaboration/src/protocol';
-import { cloneRevision } from '../../collaboration/src/git';
-import { writeBinding } from '../../publish/src/binding';
-import { loopbackRelayUrl } from '../../nostr/src/relay-policy';
+import { DiagnosticError } from '#diagnostics';
+import { validateAssets, parseAssets, ASSET_LOCK } from '#assets';
+import { relatedAssetHtml } from '#assets/related';
+import { readRepository, repositoryRef } from '#collaboration/protocol';
+import { cloneRevision } from '#collaboration/git';
+import { writeBinding } from '#publish/binding';
+import { loopbackRelayUrl } from '#nostr/relay-policy';
 import { mkdir, writeFile, rm } from 'node:fs/promises';
 import { dirname, join, resolve } from 'node:path';
 import { nip19, type Filter } from 'nostr-tools';
@@ -14,19 +14,19 @@ import {
   decodeAddress,
   identityAddress,
   type SignedEvent,
-} from '../../protocol/src';
-import { validateManifest } from '../../protocol/src/manifest';
-import { remixLineage } from '../../protocol/src/remix';
-import { manifestTopics } from '../../protocol/src/topics';
-import { fetchPublicBytes } from '../../backend/src/blossom';
-import { publicRelayUrl } from '../../nostr/src/relay-policy';
+} from '#protocol';
+import { validateManifest } from '#protocol/manifest';
+import { remixLineage } from '#protocol/remix';
+import { manifestTopics } from '#protocol/topics';
+import { fetchPublicBytes } from '#backend/blossom';
+import { publicRelayUrl } from '#nostr/relay-policy';
 import { discoverRemix } from './discovery';
-import { projectPublishingDefaults, projectSchema } from '../../publish/src/config';
-import { sourceGit } from '../../grasp/src/client';
+import { projectPublishingDefaults, projectSchema } from '#publish/config';
+import { sourceGit } from '#grasp/client';
 import { sourceArchive } from './archive';
-import type { Network } from '../../identity/src/signer';
-import { AccountError } from '../../identity/src/signer';
-import discoveryRelays from '../../nostr/discovery-relays.json';
+import type { Network } from '#identity/signer';
+import { AccountError } from '#identity/signer';
+import discoveryRelays from '#nostr/discovery-relays.json';
 
 export async function remixBytes(url: URL, local: boolean, signal: AbortSignal, limit: number) {
   if (!local) return fetchPublicBytes(url, signal, limit);

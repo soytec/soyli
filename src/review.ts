@@ -1,17 +1,18 @@
-import { diagnose, formatDiagnostic } from '../packages/diagnostics/src';
+import { diagnose, formatDiagnostic } from '#diagnostics';
 import { mkdtemp, mkdir, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { Accounts } from '../packages/identity/src/accounts';
-import { queryEvents, type NostrOptions } from '../packages/client/src/nostr';
-import { defaultTargets } from '../packages/publish/src/config';
-import { readBinding } from '../packages/publish/src/binding';
-import { committedSource } from '../packages/publish/src/git-source';
-import { sourceGit } from '../packages/grasp/src/client';
-import { MAX_READ_ARTIFACT_BYTES, sha256, type SignedEvent } from '../packages/protocol/src';
-import { validateManifest } from '../packages/protocol/src/manifest';
-import { remixBytes } from '../packages/remix/src';
+import { Accounts } from '#identity/accounts';
+import { readEvents } from '#client/nostr';
+import { readRelays } from '#nostr/relay-policy';
+import { defaultTargets } from '#publish/config';
+import { readBinding } from '#publish/binding';
+import { committedSource } from '#publish/git-source';
+import { sourceGit } from '#grasp/client';
+import { MAX_READ_ARTIFACT_BYTES, sha256, type SignedEvent } from '#protocol';
+import { validateManifest } from '#protocol/manifest';
+import { remixBytes } from '#remix';
 import {
   readRepository,
   readProposals,
@@ -20,24 +21,24 @@ import {
   validatePreview,
   type Repository,
   type Proposal,
-} from '../packages/collaboration/src/protocol';
+} from '#collaboration/protocol';
 import {
   collaborationContext,
   projectRepository,
   proposalAction,
   type CollaborationOptions,
-} from '../packages/collaboration/src/service';
-import { fetchCommit } from '../packages/collaboration/src/git';
+} from '#collaboration/service';
+import { fetchCommit } from '#collaboration/git';
 import { previewAssets } from './preview/assets';
 import { startPreviewServer } from './preview/server';
 import { localBackend } from './backend';
 import { buildProject, setupProject } from './toolchain';
-import { projectSchema } from '../packages/publish/src/config';
+import { projectSchema } from '#publish/config';
 import { hostEnvironment } from './distribution';
 
 export async function proposalList(options: CollaborationOptions & { reference?: string }) {
   const targets = defaultTargets(options.network);
-  let nostr: NostrOptions = {
+  let nostr: { relays: string[]; signal?: AbortSignal } = {
     signal: options.signal,
     relays: [targets.relay, targets.grasp.replace(/^http/, 'ws') + '/', ...targets.mirrors],
   };
@@ -53,9 +54,8 @@ export async function proposalList(options: CollaborationOptions & { reference?:
     repository = await readRepository(nostr, options.reference);
   else {
     selected = proposalId(options.reference);
-    const root = (
-      await queryEvents([{ ids: [selected], kinds: [1617, 1618, 1619], limit: 1 }], nostr)
-    )[0];
+    const filters = [{ ids: [selected], kinds: [1617, 1618, 1619], limit: 1 }];
+    const root = (await readEvents(readRelays(nostr.relays), filters, nostr.signal))[0];
     if (!root) throw new Error('Proposal unavailable on the configured relays.');
     repository = await readRepository(nostr, tag(root, 'a') ?? '');
     selected = root.kind === 1619 ? tag(root, 'E') : root.id;
@@ -134,19 +134,13 @@ export async function review(
       let input = binding?.upstream?.manifest;
       if (!input) {
         const context = await collaborationContext(options);
-        input = (
-          await queryEvents(
-            [
-              {
-                kinds: [35129],
-                authors: [state.repository.pubkey],
-                '#d': [state.repository.identifier],
-                limit: 1,
-              },
-            ],
-            { ...context.nostr, hints: state.repository.relays },
-          )
-        )[0];
+        const filters = [{
+          kinds: [35129], authors: [state.repository.pubkey],
+          '#d': [state.repository.identifier], limit: 1,
+        }];
+        input = (await readEvents(
+          readRelays(context.nostr.relays, state.repository.relays), filters, context.nostr.signal,
+        ))[0];
       }
       if (!input) throw new Error('No original napplet release was found for this repository.');
       manifest = (await validateManifest(input)).manifest;

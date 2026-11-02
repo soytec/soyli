@@ -22,8 +22,8 @@ import backendClientExample from '../templates/backend-client.ts.txt' with { typ
 import backendSkill from '../templates/soy-backends.SKILL.md' with { type: 'text' };
 import backendTypes from '../packages/dynamic-backends/src/handler-types.ts?raw' with { type: 'text' };
 import minicraftHandler from '../packages/dynamic-backends/fixtures/minicraft/handler.ts?raw' with { type: 'text' };
-import minicraftManifest from '../packages/dynamic-backends/fixtures/minicraft/backend.json';
-import minicraftSchemas from '../packages/dynamic-backends/fixtures/minicraft/schemas.json';
+import minicraftManifest from '#dynamic-backends/fixtures/minicraft/backend.json';
+import minicraftSchemas from '#dynamic-backends/fixtures/minicraft/schemas.json';
 import sharedDataGuide from '../docs/SHARED-DATA.md' with { type: 'text' };
 import outboxGuide from '../docs/OUTBOX.md' with { type: 'text' };
 import coordinatedAudio from '../docs/examples/coordinated-audio.ts?raw' with { type: 'text' };
@@ -31,7 +31,7 @@ import appDataHelper from '../packages/app-data/src/app-data.ts?raw' with { type
 import appDataContract from '../packages/app-data/src/app-data-contract.ts?raw' with { type: 'text' };
 import multiplayerSync from '../templates/multiplayer-sync.ts.txt' with { type: 'text' };
 import multiplayerScenario from '../templates/multiplayer-scenario.mjs.txt' with { type: 'text' };
-import { AccountError } from '../packages/identity/src/signer';
+import { AccountError } from '#identity/signer';
 
 export const upstream = { boilerplate: boilerplate.revision, skills: skills.revision };
 const profile = `# napplet soyLI integration

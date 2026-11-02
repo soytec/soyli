@@ -1,8 +1,8 @@
-import { DiagnosticError } from '../../diagnostics/src';
+import { DiagnosticError } from '#diagnostics';
 import { AuthRequiredError, RelayPool } from 'applesauce-relay';
 import { matchFilter, type Filter } from 'nostr-tools';
 import { NEVER, firstValueFrom, fromEvent, takeUntil, timeout, type Subscription } from 'rxjs';
-import { verifiedEvent, type SignedEvent } from '../../protocol/src';
+import { verifiedEvent, type SignedEvent } from '#protocol';
 import { PublishError } from './config';
 
 export const newer = (a: SignedEvent, b: SignedEvent) =>

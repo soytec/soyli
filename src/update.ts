@@ -6,7 +6,7 @@ import {
   DiagnosticError,
   formatDiagnostic,
   ToolOutput,
-} from '../packages/diagnostics/src';
+} from '#diagnostics';
 import { packagedBy, standalone, version } from './distribution';
 import installer from '../support/install.sh' with { type: 'text' };
 

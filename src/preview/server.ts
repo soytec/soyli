@@ -1,25 +1,25 @@
-import { relatedAssetHtml } from '../../packages/assets/src/related';
-import { diagnose, formatDiagnostic } from '../../packages/diagnostics/src';
+import { relatedAssetHtml } from '#assets/related';
+import { diagnose, formatDiagnostic } from '#diagnostics';
 import { manageProject, editProject } from '../manager';
 import type { Workshop } from '../workshop';
-import { readBytes } from '../../packages/client/src/bytes';
-import { readAssets, assetBytes, assetMime } from '../../packages/assets/src';
-import { readBinding } from '../../packages/publish/src/binding';
-import { recordingSchema, type Recording } from '../../packages/publish/src/config';
-import { videoBytesResponse } from '../../packages/backend/src/preview-videos';
+import { readBytes } from '#client/bytes';
+import { readAssets, assetBytes, assetMime } from '#assets';
+import { readBinding } from '#publish/binding';
+import { recordingSchema, type Recording } from '#publish/config';
+import { videoBytesResponse } from '#backend/preview-videos';
 import { z } from 'zod';
-import { MAX_READ_ARTIFACT_BYTES, sha256 } from '../../packages/protocol/src/artifact';
-import { missingDomains } from '../../packages/runtime/src/capabilities';
+import { MAX_READ_ARTIFACT_BYTES, sha256 } from '#protocol/artifact';
+import { missingDomains } from '#runtime/capabilities';
 import type { PreviewAssets } from './assets';
-import { builtRequirements } from '../../packages/publish/src/artifact';
-import { regularFile } from '../../packages/publish/src/project';
+import { builtRequirements } from '#publish/artifact';
+import { regularFile } from '#publish/project';
 import { fileURLToPath } from 'node:url';
 import { listingPreview, listingImage, listingVideo } from './listing';
-import type { Network } from '../../packages/identity/src/signer';
-import type { BackendProvider } from '../../packages/multiplayer/src/client';
-import { backendConfig } from '../../packages/multiplayer/src/contracts';
+import type { Network } from '#identity/signer';
+import type { BackendProvider } from '#multiplayer/client';
+import { backendConfig } from '#multiplayer/contracts';
 import { backendProject } from '../backend';
-import { projectIdentity } from '../../packages/publish/src/config';
+import { projectIdentity } from '#publish/config';
 
 const relayUrl = z
   .string()

@@ -1,4 +1,4 @@
-import { AccountError } from '../packages/identity/src/signer';
+import { AccountError } from '#identity/signer';
 import { hostEnvironment } from './distribution';
 
 export async function gitAvailable() {

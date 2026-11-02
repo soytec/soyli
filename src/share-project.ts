@@ -1,13 +1,13 @@
 import { join } from 'node:path';
-import { committedSource, inspectHistory } from '../packages/publish/src/git-source';
-import { publishProject, type PublishOptions } from '../packages/publish/src';
-import { propose, type CollaborationOptions } from '../packages/collaboration/src/service';
+import { committedSource, inspectHistory } from '#publish/git-source';
+import { publishProject, type PublishOptions } from '#publish';
+import { propose, type CollaborationOptions } from '#collaboration/service';
 import { buildProject } from './toolchain';
 import { syncBackend } from './backend';
-import { Accounts, captureAccount } from '../packages/identity/src/accounts';
-import { readBinding, writeBinding } from '../packages/publish/src/binding';
+import { Accounts, captureAccount } from '#identity/accounts';
+import { readBinding, writeBinding } from '#publish/binding';
 import { backendProject } from './backend';
-import type { Network } from '../packages/identity/src/signer';
+import type { Network } from '#identity/signer';
 import { checkPublication } from './publish-check';
 
 /** Public build context follows the user's selection; this never selects credentials. */

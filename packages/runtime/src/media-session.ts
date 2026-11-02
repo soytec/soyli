@@ -1,4 +1,4 @@
-import { resourceUrl } from '../../client/src/bytes';
+import { resourceUrl } from '#client/bytes';
 import { z } from 'zod';
 
 const metadataSchema = z.object({

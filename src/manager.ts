@@ -10,20 +10,20 @@ import {
   ASSET_LOCK,
   MAX_ASSET_BYTES,
   assetMime,
-} from '../packages/assets/src';
+} from '#assets';
 import {
   PublishError,
   projectSchema,
   projectTopics,
   resolveTargets,
   targetsSchema,
-} from '../packages/publish/src/config';
-import { effectiveProject, readBinding, writeBinding } from '../packages/publish/src/binding';
-import { regularFile } from '../packages/publish/src/project';
-import { sha256 } from '../packages/protocol/src';
-import { inspectPreviewVideo } from '../packages/protocol/src/preview-video';
-import { sourceGit } from '../packages/grasp/src/client';
-import type { Network } from '../packages/identity/src/signer';
+} from '#publish/config';
+import { effectiveProject, readBinding, writeBinding } from '#publish/binding';
+import { regularFile } from '#publish/project';
+import { sha256 } from '#protocol';
+import { inspectPreviewVideo } from '#protocol/preview-video';
+import { sourceGit } from '#grasp/client';
+import type { Network } from '#identity/signer';
 
 async function state(root: string) {
   const config = await regularFile(root, 'napplet.json', 16384);

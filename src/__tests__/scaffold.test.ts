@@ -2,7 +2,7 @@ import { afterAll, expect, test } from 'bun:test';
 import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { sourceGit } from '../../packages/grasp/src/client';
+import { sourceGit } from '#grasp/client';
 // Exercise the shipped command in its own process. Besides checking the real
 // entrypoint, this avoids Bun 1.3.11 build/read failures observed after unrelated
 // filesystem/network tests in the same VM.

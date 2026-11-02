@@ -1,7 +1,8 @@
-import { DiagnosticError } from '../../diagnostics/src';
-import { queryEvents, publishEvent } from '../../client/src/nostr';
-import { sourceGit } from '../../grasp/src/client';
-import { verifiedEvent, type SignedEvent } from '../../protocol/src';
+import { DiagnosticError } from '#diagnostics';
+import { readEvents, publishFirst } from '#client/nostr';
+import { readRelays } from '#nostr/relay-policy';
+import { sourceGit } from '#grasp/client';
+import { verifiedEvent, type SignedEvent } from '#protocol';
 import { selectCloneUrls, fetchCommit } from './git';
 import { commitPattern, tag, values } from './protocol';
 import type { ProposalProgress } from './progress';
@@ -31,12 +32,12 @@ export async function deliverProposal(input: {
   if (!advertised.length || !input.clones.length || !input.relays.length)
     throw new Error('Proposal requires upstream clone servers and relays.');
   await sourceGit(input.directory, ['cat-file', '-e', `${commit}^{commit}`]);
-  const nostr = { relays: input.relays, signal: input.signal };
+  const relays = readRelays(input.relays);
   const failures: Error[] = [];
   try {
     input.signal?.throwIfAborted();
     await input.onProgress?.('relay', 'Publishing the signed proposal to the upstream relays.');
-    await publishEvent(event, nostr);
+    await publishFirst(relays, event, input.signal);
     let hosted = false;
     for (const url of selectCloneUrls(input.clones, input.local)) {
       input.signal?.throwIfAborted();
@@ -90,7 +91,8 @@ export async function deliverProposal(input: {
     // Legacy events may advertise contributor clones. Keep their signature and
     // require those original locations to remain fetchable; never create a fork.
     await fetchCommit(input.directory, advertised, commit!, input.local);
-    const visible = await queryEvents([{ ids: [event.id], limit: 1 }], nostr);
+    const filters = [{ ids: [event.id], limit: 1 }];
+    const visible = await readEvents(relays, filters, input.signal);
     if (!visible.some((e) => e.id === event.id))
       throw new Error('Upstream relay acknowledged the proposal but has not made it queryable.');
     await input.checkpoint?.('proposal');
@@ -127,7 +129,7 @@ export async function publishBranch(input: {
     !input.ref.startsWith('refs/heads/')
   )
     throw new Error('Saved branch publication is invalid.');
-  const nostr = { relays: input.relays, signal: input.signal };
+  const relays = readRelays(input.relays);
   const failures: Error[] = [];
   try {
     await sourceGit(input.directory, ['cat-file', '-e', `${commit}^{commit}`]);
@@ -138,7 +140,7 @@ export async function publishBranch(input: {
         const head = remote.split('\t')[0];
         if (head !== input.previous && head !== commit)
           throw new Error('Upstream branch changed since publication was prepared.');
-        await publishEvent(state, nostr);
+        await publishFirst(relays, state, input.signal);
         await sourceGit(input.directory, [
           'push',
           '--no-verify',
@@ -151,7 +153,8 @@ export async function publishBranch(input: {
           `${commit}\t${input.ref}`
         )
           throw new Error('Upstream does not advertise the merged commit.');
-        const visible = await queryEvents([{ ids: [state.id], limit: 1 }], nostr);
+        const filters = [{ ids: [state.id], limit: 1 }];
+        const visible = await readEvents(relays, filters, input.signal);
         if (!visible.some((e) => e.id === state.id))
           throw new Error('Signed repository state is not queryable after the push.');
         return;

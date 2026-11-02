@@ -1,10 +1,10 @@
 import { nip19 } from 'nostr-tools';
 import ipaddr from 'ipaddr.js';
-import { DiagnosticError } from '../../diagnostics/src';
-import { sourceGit } from '../../grasp/src/client';
-import { cloneUrl } from '../../collaboration/src/git';
-import { resolveRepositoryRef, values } from '../../collaboration/src/protocol';
-import type { SignedEvent } from '../../protocol/src';
+import { DiagnosticError } from '#diagnostics';
+import { sourceGit } from '#grasp/client';
+import { cloneUrl } from '#collaboration/git';
+import { resolveRepositoryRef, values } from '#collaboration/protocol';
+import type { SignedEvent } from '#protocol';
 import { newer } from './relay';
 
 /** A project's own NIP-34 repository. The napplet publisher reads it without

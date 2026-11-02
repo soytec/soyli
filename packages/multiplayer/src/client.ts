@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { NostrClientTransport } from '@contextvm/sdk/transport';
 import { ApplesauceRelayPool } from '@contextvm/sdk/relay';
 import { EncryptionMode, type NostrSigner } from '@contextvm/sdk/core';
-import { readRelayUrl } from '../../nostr/src/relay-policy';
+import { readRelayUrl } from '#nostr/relay-policy';
 
 export function rtcConfiguration(input: unknown, local = false): RTCConfiguration {
   const value = z

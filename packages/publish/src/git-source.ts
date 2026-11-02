@@ -1,6 +1,6 @@
-import { sourceGit } from '../../grasp/src/client';
+import { sourceGit } from '#grasp/client';
 import { PublishError } from './config';
-import { DiagnosticError } from '../../diagnostics/src';
+import { DiagnosticError } from '#diagnostics';
 import { isLegacyPublicBackendContext, LEGACY_BACKEND_CONTEXT } from './legacy-backend-context';
 import { MAX_SOURCE_FILES } from './limits';
 import { createSourceFileReader, createSourceLinkResolver } from './source-links';

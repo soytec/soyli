@@ -1,11 +1,11 @@
-import { publicationDestinations } from '../packages/nostr/src/publication-copies';
+import { publicationDestinations } from '#nostr/publication-copies';
 import { join, resolve } from 'node:path';
-import { Journal, readJson, atomicJson } from '../packages/publish/src/journal';
-import { Accounts, captureAccount } from '../packages/identity/src/accounts';
-import type { Network, CreatorSigner } from '../packages/identity/src/signer';
-import { sha256 } from '../packages/protocol/src';
-import { DiagnosticError } from '../packages/diagnostics/src';
-import { LifecycleTransport } from '../packages/lifecycle/src/transport';
+import { Journal, readJson, atomicJson } from '#publish/journal';
+import { Accounts, captureAccount } from '#identity/accounts';
+import type { Network, CreatorSigner } from '#identity/signer';
+import { sha256 } from '#protocol';
+import { DiagnosticError } from '#diagnostics';
+import { LifecycleTransport } from '#lifecycle/transport';
 import {
   parseReceipt,
   planLifecycle,
@@ -14,7 +14,7 @@ import {
   lifecycleFinished,
   type LifecycleReceipt,
   type Operation,
-} from '../packages/lifecycle/src';
+} from '#lifecycle';
 import { ask } from './input';
 
 export async function lifecycleCommand(options: {

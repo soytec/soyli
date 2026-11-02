@@ -1,10 +1,10 @@
 import { OutboxPublisher, type OutboxPublicationPlan } from './outbox-session';
 import { z } from 'zod';
 import { matchFilters } from 'nostr-tools';
-import { queryEvents } from '../../client/src/nostr';
-import { verifiedEvent, type SignedEvent } from '../../protocol/src';
-import { readRelayUrl } from '../../nostr/src/relay-policy';
-import { redactDiagnostic } from '../../diagnostics/src';
+import { readComplete } from '#client/nostr';
+import { verifiedEvent, type SignedEvent } from '#protocol';
+import { readRelays, readRelayUrl } from '#nostr/relay-policy';
+import { redactDiagnostic } from '#diagnostics';
 import { mapTemplate, MAP_KIND } from './map-contract';
 export { isMapPublication } from './map-contract';
 import { signExact, type ActionConsent, type ActionIO } from './action-session';
@@ -139,8 +139,7 @@ export class NappletMapPublication {
       const io =
         this.options.io ??
         ({
-          query: (filters, signal, requireComplete) =>
-            queryEvents(filters, { relays, signal, requireComplete }),
+          query: (filters, signal) => readComplete(readRelays(relays), filters, signal),
           publish: async (event, s) => {
             const results = await Promise.allSettled(
               relays.map((relay) => publisher.publish(relay, event, s)),

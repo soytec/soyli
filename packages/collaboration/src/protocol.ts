@@ -1,10 +1,10 @@
 import { nip19 } from 'nostr-tools';
 import { z } from 'zod';
-import { DiagnosticError } from '../../diagnostics/src';
-import { verifiedEvent, sha256, type SignedEvent } from '../../protocol/src';
-import { validateManifest } from '../../protocol/src/manifest';
-import { queryEvents, observeQuery, type NostrOptions } from '../../client/src/nostr';
-import { Observable, map, filter, distinctUntilChanged, Subscription } from 'rxjs';
+import { DiagnosticError } from '#diagnostics';
+import { verifiedEvent, sha256, type SignedEvent } from '#protocol';
+import { validateManifest } from '#protocol/manifest';
+import { readEvents } from '#client/nostr';
+import { readRelays } from '#nostr/relay-policy';
 
 export const commitPattern = /^[a-f0-9]{40}$/;
 export const tag = (event: SignedEvent, name: string) => event.tags.find((t) => t[0] === name)?.[1];
@@ -129,22 +129,23 @@ export type Repository = ReturnType<typeof repositoryRef> & {
   euc?: string;
 };
 export async function readRepository(
-  options: NostrOptions,
+  options: { relays: string[]; signal?: AbortSignal },
   reference: string,
 ): Promise<Repository> {
   const ref = repositoryRef(reference);
+  const filters = [{ kinds: [30617], authors: [ref.pubkey], '#d': [ref.identifier], limit: 5 }];
   const event = latest(
-    await queryEvents(
-      [{ kinds: [30617], authors: [ref.pubkey], '#d': [ref.identifier], limit: 5 }],
-      { ...options, hints: [...ref.relays, ...(options.hints ?? [])] },
-    ),
+    await readEvents(readRelays(options.relays, ref.relays), filters, options.signal),
   )[0];
   if (!event) throw new Error('Repository announcement unavailable.');
   return repositoryFromEvent(ref, event);
 }
 /** Legacy NIP-34 reciprocal maintainership at the selected repository coordinate.
  * An invitation alone must not make a state authoritative. */
-export async function readRepositoryState(options: NostrOptions, repo: Repository) {
+export async function readRepositoryState(
+  options: { relays: string[]; signal?: AbortSignal },
+  repo: Repository,
+) {
   if (repo.event.tags.some((t) => ['M', 'm'].includes(t[0])))
     throw new DiagnosticError(
       'REPOSITORY_AUTHORITY_UNSUPPORTED',
@@ -156,10 +157,11 @@ export async function readRepositoryState(options: NostrOptions, repo: Repositor
           'Use ngit for this repository’s merge and push operations. Soy has not changed its announcement or selected another identity.',
       },
     );
-  const announcements = await queryEvents(
-    [{ kinds: [30617], authors: repo.maintainers, '#d': [repo.identifier], limit: 100 }],
-    { ...options, hints: [...repo.relays, ...(options.hints ?? [])] },
-  );
+  const relays = readRelays(options.relays, repo.relays);
+  const announcementFilters = [
+    { kinds: [30617], authors: repo.maintainers, '#d': [repo.identifier], limit: 100 },
+  ];
+  const announcements = await readEvents(relays, announcementFilters, options.signal);
   const authors = [
     repo.pubkey,
     ...repo.maintainers.filter((pubkey) => {
@@ -171,12 +173,8 @@ export async function readRepositoryState(options: NostrOptions, repo: Repositor
       );
     }),
   ];
-  const state = latest(
-    await queryEvents(
-      [{ kinds: [30618], authors, '#d': [repo.identifier], limit: 100 }],
-      { ...options, hints: [...repo.relays, ...(options.hints ?? [])] },
-    ),
-  )[0];
+  const filters = [{ kinds: [30618], authors, '#d': [repo.identifier], limit: 100 }];
+  const state = latest(await readEvents(relays, filters, options.signal))[0];
   return { state, authors: [...new Set(authors)] };
 }
 export function repositoryFromEvent(
@@ -196,25 +194,6 @@ export function repositoryFromEvent(
     ],
     euc: event.tags.find((t) => t[0] === 'r' && t[2] === 'euc')?.[1],
   };
-}
-/** A display projection; later announcements replace earlier ones as relays respond. */
-export function observeRepository(
-  options: NostrOptions & { allowed?: (event: SignedEvent) => boolean },
-  reference: string,
-) {
-  const ref = repositoryRef(reference);
-  return observeQuery(
-    [{ kinds: [30617], authors: [ref.pubkey], '#d': [ref.identifier], limit: 5 }],
-    { ...options, hints: [...ref.relays, ...(options.hints ?? [])] },
-  ).pipe(
-    map((events) => latest(events)[0]),
-    filter((event): event is SignedEvent => !!event),
-    distinctUntilChanged((a, b) => a.id === b.id),
-    map((event) => {
-      if (options.allowed && !options.allowed(event)) throw new Error('Repository unavailable here.');
-      return repositoryFromEvent(ref, event);
-    }),
-  );
 }
 export type Proposal = {
   root: SignedEvent;
@@ -294,108 +273,25 @@ export function proposalsFromEvents(repo: Repository, inputs: SignedEvent[]): Pr
     };
   });
 }
-export async function readProposals(options: NostrOptions, repo: Repository, selected?: string) {
-  const roots = await queryEvents(
-    [
-      { kinds: [1617, 1618], '#a': [repo.address], limit: 100 },
-      ...(selected ? [{ kinds: [1617, 1618], ids: [proposalId(selected)], limit: 1 }] : []),
-    ],
-    { ...options, hints: [...repo.relays, ...(options.hints ?? [])] },
-  );
-  if (!roots.length) return [];
-  const ids = roots.map((e) => e.id);
-  const related = await queryEvents(
-    [
-      { kinds: [1619, 1111], '#E': ids, limit: 500 },
-      { kinds: [1630, 1631, 1632, 1633], '#e': ids, limit: 500 },
-    ],
-    { ...options, hints: [...repo.relays, ...(options.hints ?? [])] },
-  );
-  return proposalsFromEvents(repo, [...roots, ...related]);
-}
-/** Progressive review UI. The CLI's merge/review reads keep their full-query contract. */
-export function observeProposals(
-  options: NostrOptions & { allowed?: (event: SignedEvent) => boolean },
+export async function readProposals(
+  options: { relays: string[]; signal?: AbortSignal },
   repo: Repository,
   selected?: string,
 ) {
+  const relays = readRelays(options.relays, repo.relays);
   const filters = [
     { kinds: [1617, 1618], '#a': [repo.address], limit: 100 },
     ...(selected ? [{ kinds: [1617, 1618], ids: [proposalId(selected)], limit: 1 }] : []),
   ];
-  return new Observable<Proposal[]>((observer) => {
-    const subscriptions = new Subscription();
-    const requested = new Set<string>(),
-      related = new Map<string, SignedEvent>();
-    let roots: SignedEvent[] = [],
-      timer: ReturnType<typeof setTimeout> | undefined,
-      rootsComplete = false,
-      loadingRelated = false,
-      pendingRelated = 0;
-    const complete = () => {
-      if (rootsComplete && !timer && !loadingRelated && pendingRelated === 0) observer.complete();
-    };
-    const emit = () =>
-      observer.next(
-        proposalsFromEvents(
-          repo,
-          [...roots, ...related.values()].filter((event) => options.allowed?.(event) ?? true),
-        ),
-      );
-    const loadRelated = () => {
-      timer = undefined;
-      loadingRelated = true;
-      const ids = roots.filter((event) => !requested.has(event.id)).map((event) => event.id);
-      for (let i = 0; i < ids.length && !observer.closed; i += 32) {
-        const group = ids.slice(i, i + 32);
-        group.forEach((id) => requested.add(id));
-        pendingRelated++;
-        subscriptions.add(
-          observeQuery(
-            [
-              { kinds: [1619, 1111], '#E': group, limit: 500 },
-              { kinds: [1630, 1631, 1632, 1633], '#e': group, limit: 500 },
-            ],
-            { ...options, hints: [...repo.relays, ...(options.hints ?? [])] },
-          ).subscribe({
-            next: (events) => {
-              for (const event of events)
-                if (related.size < 2000 || related.has(event.id)) related.set(event.id, event);
-              emit();
-            },
-            error: (error) => observer.error(error),
-            complete: () => {
-              pendingRelated--;
-              complete();
-            },
-          }),
-        );
-      }
-      loadingRelated = false;
-      complete();
-    };
-    subscriptions.add(
-      observeQuery(filters, { ...options, hints: [...repo.relays, ...(options.hints ?? [])] }).subscribe({
-        next: (events) => {
-          roots = latest(events)
-            .filter((e) => values(e, 'a').includes(repo.address))
-            .slice(0, 100);
-          emit();
-          if (!timer) timer = setTimeout(loadRelated, 40);
-        },
-        error: (error) => observer.error(error),
-        complete: () => {
-          rootsComplete = true;
-          clearTimeout(timer);
-          loadRelated();
-        },
-      }),
-    );
-    return () => {
-      clearTimeout(timer);
-      subscriptions.unsubscribe();
-    };
-  });
+  const roots = await readEvents(relays, filters, options.signal);
+  if (!roots.length) return [];
+  const ids = roots.map((e) => e.id);
+  const relatedFilters = [
+    { kinds: [1619, 1111], '#E': ids, limit: 500 },
+    { kinds: [1630, 1631, 1632, 1633], '#e': ids, limit: 500 },
+  ];
+  const related = await readEvents(relays, relatedFilters, options.signal);
+  return proposalsFromEvents(repo, [...roots, ...related]);
 }
 export const previewSchema = z
   .object({

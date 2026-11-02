@@ -11,9 +11,9 @@ import { Boards } from './boards';
 import { Rooms } from './rooms';
 import { createMatchmakingServer } from './server';
 import type { BoardDefinition } from './contracts';
-import { DynamicBackends } from '../../dynamic-backends/src/service';
-import { gitSourceLoader } from '../../dynamic-backends/src/build';
-import { productionSandbox } from '../../dynamic-backends/src/sandbox';
+import { DynamicBackends } from '#dynamic-backends/service';
+import { gitSourceLoader } from '#dynamic-backends/build';
+import { productionSandbox } from '#dynamic-backends/sandbox';
 
 export async function backendIdentity(path: string) {
   await mkdir(dirname(path), { recursive: true, mode: 0o700 });
@@ -70,8 +70,8 @@ export async function startBackend(options: {
     creators?: string[] | (() => string[]);
   };
   localModules?: {
-    module: import('../../dynamic-backends/src/contracts').ModuleRef;
-    input: import('../../dynamic-backends/src/build').BuildInput;
+    module: import('#dynamic-backends/contracts').ModuleRef;
+    input: import('#dynamic-backends/build').BuildInput;
   }[];
 }) {
   const dynamicRequested = Boolean(options.dynamic || options.localModules?.length);

@@ -1,26 +1,26 @@
-import { readAssets } from '../../packages/assets/src';
-import { effectiveProject } from '../../packages/publish/src/binding';
+import { readAssets } from '#assets';
+import { effectiveProject } from '#publish/binding';
 import {
   inspectPreviewVideo,
   MAX_VIDEO_BYTES,
-} from '../../packages/protocol/src/preview-video';
+} from '#protocol/preview-video';
 import {
   projectSchema,
   projectIdentity,
   projectTopics,
   resolveTargets,
-} from '../../packages/publish/src/config';
-import { regularFile } from '../../packages/publish/src/project';
-import { MAX_PREVIEW_BYTES } from '../../packages/protocol/src/preview';
-import { encodeAddress, sha256 } from '../../packages/protocol/src';
-import { videoMatchesBuild } from '../../packages/publish/src/media-review';
-import { missingDomains } from '../../packages/runtime/src/capabilities';
-import type { Network } from '../../packages/identity/src/signer';
-import { builtConfiguration, builtRequirements } from '../../packages/publish/src/artifact';
+} from '#publish/config';
+import { regularFile } from '#publish/project';
+import { MAX_PREVIEW_BYTES } from '#protocol/preview';
+import { encodeAddress, sha256 } from '#protocol';
+import { videoMatchesBuild } from '#publish/media-review';
+import { missingDomains } from '#runtime/capabilities';
+import type { Network } from '#identity/signer';
+import { builtConfiguration, builtRequirements } from '#publish/artifact';
 import {
   MAX_ARTIFACT_BYTES,
   MAX_READ_ARTIFACT_BYTES,
-} from '../../packages/protocol/src/artifact';
+} from '#protocol/artifact';
 
 async function projectAt(root: string) {
   return projectSchema.parse(

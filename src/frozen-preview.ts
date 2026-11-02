@@ -1,9 +1,9 @@
 import { join } from 'node:path';
-import { ASSET_LOCK, parseAssets } from '../packages/assets/src';
-import { readModule } from '../packages/dynamic-backends/src/module-source';
-import { executableEntry } from '../packages/publish/src/artifact';
-import { projectSchema, PublishError } from '../packages/publish/src/config';
-import { checkSource, durableFile } from '../packages/publish/src/project';
+import { ASSET_LOCK, parseAssets } from '#assets';
+import { readModule } from '#dynamic-backends/module-source';
+import { executableEntry } from '#publish/artifact';
+import { projectSchema, PublishError } from '#publish/config';
+import { checkSource, durableFile } from '#publish/project';
 
 /** Materialize only runtime inputs; never copy credentials, bindings or a dev database. */
 export async function materializePreview(directory: string, contents: Map<string, Uint8Array>) {

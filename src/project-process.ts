@@ -1,5 +1,5 @@
-import { DiagnosticError, ToolOutput } from '../packages/diagnostics/src';
-import { AccountError } from '../packages/identity/src/signer';
+import { DiagnosticError, ToolOutput } from '#diagnostics';
+import { AccountError } from '#identity/signer';
 
 export function projectEnvironment() {
   const env: Record<string, string> = {};

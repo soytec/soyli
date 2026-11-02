@@ -1,4 +1,4 @@
-import { sha256, MAX_ARTIFACT_BYTES } from '../../protocol/src/artifact';
+import { sha256, MAX_ARTIFACT_BYTES } from '#protocol/artifact';
 import ipaddr from 'ipaddr.js';
 
 /** Browser transport only. No cookies, authorization headers or server-side network access. */

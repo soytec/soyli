@@ -2,8 +2,8 @@ import { expect, test } from 'bun:test';
 import { mkdir, mkdtemp, readlink, rm, symlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { sourceGit } from '../../../grasp/src/client';
-import { sha256 } from '../../../protocol/src';
+import { sourceGit } from '#grasp/client';
+import { sha256 } from '#protocol';
 
 const command = process.env.SPACE_TEST_CLI
   ? [process.env.SPACE_TEST_CLI]

@@ -1,5 +1,5 @@
 import { PublishError, projectSchema } from './config';
-import { MAX_CONFIG_BYTES, validateConfigSchema } from '../../runtime/src/config-schema';
+import { MAX_CONFIG_BYTES, validateConfigSchema } from '#runtime/config-schema';
 import { decodeHTMLAttribute } from 'entities';
 
 /** Source HTML remains source; the generated HTML is the executable release. */

@@ -1,6 +1,6 @@
-import { relatedAssetHtml } from '../packages/assets/src/related';
-import { regularFile } from '../packages/publish/src/project';
-import { MAX_ARTIFACT_BYTES } from '../packages/protocol/src';
+import { relatedAssetHtml } from '#assets/related';
+import { regularFile } from '#publish/project';
+import { MAX_ARTIFACT_BYTES } from '#protocol';
 import { projectEnvironment as environment, runProjectCommand as command } from './project-process';
 import {
   readBuildRecipe,
@@ -9,14 +9,14 @@ import {
   watchRecipe,
   sourceStamp,
 } from './rust-build';
-import { DiagnosticError, ToolOutput } from '../packages/diagnostics/src';
-import { validateAssets } from '../packages/assets/src';
+import { DiagnosticError, ToolOutput } from '#diagnostics';
+import { validateAssets } from '#assets';
 import { chmod, lstat, mkdir, mkdtemp, readlink, rename, rm, symlink } from 'node:fs/promises';
 import { homedir } from 'node:os';
 import { dirname, isAbsolute, join, resolve } from 'node:path';
 import { createRequire } from 'node:module';
 import pins from '../vendor/toolchain.json';
-import { AccountError } from '../packages/identity/src/signer';
+import { AccountError } from '#identity/signer';
 import { backendProject } from './backend';
 import { selectNodeToolchain } from './toolchain-platform';
 import { packagedBy } from './distribution';

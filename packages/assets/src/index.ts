@@ -1,10 +1,10 @@
-import { PublishError } from '../../publish/src/config';
+import { PublishError } from '#publish/config';
 import { z } from 'zod';
 import { mkdir, open, rename, rm, lstat } from 'node:fs/promises';
 import { join } from 'node:path';
-import { sha256 } from '../../protocol/src';
-import { resourceMime } from '../../client/src/resource-mime';
-import { regularFile, checkSource } from '../../publish/src/project';
+import { sha256 } from '#protocol';
+import { resourceMime } from '#client/resource-mime';
+import { regularFile, checkSource } from '#publish/project';
 
 export const ASSET_LOCK = 'napplet.assets.json';
 export const ASSET_MODULE = 'soy-assets.js';

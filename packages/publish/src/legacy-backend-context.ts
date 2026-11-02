@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { decodeAddress, encodeAddress } from '../../protocol/src';
+import { decodeAddress, encodeAddress } from '#protocol';
 
 export const LEGACY_BACKEND_CONTEXT = '.napplet-space/soy-backend.json';
 const relay = z

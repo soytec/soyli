@@ -9,8 +9,8 @@ import {
 } from './matchmaking';
 import { Boards, boardRegister, boardSubmit, boardRead, boardEntry } from './boards';
 import { Rooms, roomCreate, roomKey, roomNamespace } from './rooms';
-import { registerDynamicTools } from '../../dynamic-backends/src/server';
-import type { DynamicBackends } from '../../dynamic-backends/src/service';
+import { registerDynamicTools } from '#dynamic-backends/server';
+import type { DynamicBackends } from '#dynamic-backends/service';
 
 export function createMatchmakingServer(
   service = new Matchmaking(),

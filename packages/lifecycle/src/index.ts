@@ -6,18 +6,18 @@ import {
   sha256,
   encodeAddress,
   type SignedEvent,
-} from '../../protocol/src';
+} from '#protocol';
 import {
   legacySnapshotAddress,
   validateManifest,
   validateRelease,
-} from '../../protocol/src/manifest';
-import { appReferences, descriptorImages } from '../../protocol/src/preview';
-import { descriptorVideos } from '../../protocol/src/preview-video';
-import { manifestScreenshots, manifestPreviewVideo } from '../../protocol/src/presentation';
-import { standalonePresentationKey } from '../../protocol/src/presentation-pairs';
-import { repositoryRef } from '../../collaboration/src/protocol';
-import { diagnose, DiagnosticError } from '../../diagnostics/src';
+} from '#protocol/manifest';
+import { appReferences, descriptorImages } from '#protocol/preview';
+import { descriptorVideos } from '#protocol/preview-video';
+import { manifestScreenshots, manifestPreviewVideo } from '#protocol/presentation';
+import { standalonePresentationKey } from '#protocol/presentation-pairs';
+import { repositoryRef } from '#collaboration/protocol';
+import { diagnose, DiagnosticError } from '#diagnostics';
 import type { LifecycleIO, LifecycleSigner } from './transport';
 
 export type Operation = 'unpublish' | 'republish' | 'delete';
@@ -895,7 +895,7 @@ export function parseReceipt(value: unknown): LifecycleReceipt {
   return r;
 }
 import { z } from 'zod';
-import { eventSchema } from '../../protocol/src';
+import { eventSchema } from '#protocol';
 const text = z.string().max(4096),
   digest = z.string().regex(/^[a-f0-9]{64}$/);
 const receiptSchema = z.object({

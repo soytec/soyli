@@ -1,4 +1,4 @@
-import { importAsset } from '../../packages/assets/src';
+import { importAsset } from '#assets';
 import { afterAll, expect, test } from 'bun:test';
 import { mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
@@ -7,10 +7,10 @@ import { boilerplateFiles, creatorSkills, installCreatorSkills } from '../creato
 import boilerplate from '../../vendor/boilerplate.json';
 import skills from '../../vendor/skills.json';
 import { scaffold } from '../scaffold';
-import { inspectProject } from '../../packages/publish/src/project';
-import { freezeFixture as freezeSource } from '../../packages/publish/src/testing';
-import { executableBytes } from '../../packages/publish/src/artifact';
-import { sha256 } from '../../packages/protocol/src';
+import { inspectProject } from '#publish/project';
+import { freezeFixture as freezeSource } from '#publish/testing';
+import { executableBytes } from '#publish/artifact';
+import { sha256 } from '#protocol';
 
 const root = await mkdtemp(join(tmpdir(), 'napplet-creator-kit-'));
 afterAll(() => rm(root, { recursive: true, force: true }));

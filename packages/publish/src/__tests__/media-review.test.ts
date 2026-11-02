@@ -1,6 +1,6 @@
 import { test, expect } from 'bun:test';
 import { videoMatchesBuild } from '../media-review';
-import { sha256 } from '../../../protocol/src';
+import { sha256 } from '#protocol';
 import { projectSchema } from '../config';
 
 test('media reuse approval is tied to both the exact updated build and unchanged clip', async () => {

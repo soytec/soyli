@@ -1,14 +1,14 @@
 import shim from '@napplet/shim/prelude.global?raw';
-import { IntentWorkspace, intentContracts } from '../../packages/runtime/src/intent-session';
+import { IntentWorkspace, intentContracts } from '#runtime/intent-session';
 import {
   chooseIntentHandler,
   intentDefaultControls,
-} from '../../packages/runtime/src/intent-controls';
-import { preparePlayback } from '../../packages/runtime/src/playback';
-import { loadArtifact, PLAYER_SANDBOX } from '../../packages/runtime/src';
-import { nappletPrelude } from '../../packages/runtime/src/prelude';
-import { declaredConfig } from '../../packages/runtime/src/config-schema';
-import { attachNappletHost, type HostOptions } from '../../packages/runtime/src/host';
+} from '#runtime/intent-controls';
+import { preparePlayback } from '#runtime/playback';
+import { loadArtifact, PLAYER_SANDBOX } from '#runtime';
+import { nappletPrelude } from '#runtime/prelude';
+import { declaredConfig } from '#runtime/config-schema';
+import { attachNappletHost, type HostOptions } from '#runtime/host';
 import type { PreviewRevision } from './server';
 
 /** Preview retains source and verified targets in one host-owned workspace. */

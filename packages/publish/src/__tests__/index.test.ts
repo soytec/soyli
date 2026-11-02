@@ -1,32 +1,32 @@
-import { publicationDestinations } from '../../../nostr/src/publication-copies';
+import { publicationDestinations } from '#nostr/publication-copies';
 import {
   planLifecycle,
   createLifecycleReceipt,
   executeLifecycle,
   lifecycleFinished,
   parseReceipt,
-} from '../../../lifecycle/src';
-import { migrationTemplate } from '../../../migration/src';
+} from '#lifecycle';
+import { migrationTemplate } from '#migration';
 import {
   MANIFEST_PRESENTATION_PROFILE,
   manifestScreenshotSources,
   manifestVideoSources,
-} from '../../../protocol/src/presentation';
-import { importAsset, readAssets, validateAssets } from '../../../assets/src';
-import { createRemix } from '../../../remix/src';
-import { sourceArchive } from '../../../remix/src/archive';
+} from '#protocol/presentation';
+import { importAsset, readAssets, validateAssets } from '#assets';
+import { createRemix } from '#remix';
+import { sourceArchive } from '#remix/archive';
 import { expect, test } from 'bun:test';
 import { mkdtemp, rm, symlink } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { Accounts, type Vault } from '../../../identity/src/accounts';
+import { Accounts, type Vault } from '#identity/accounts';
 import {
   encodeAddress,
   sha256,
   validateRelease,
   verifiedEvent,
   type SignedEvent,
-} from '../../../protocol/src';
+} from '#protocol';
 import {
   finalizeEvent,
   generateSecretKey,
@@ -35,9 +35,9 @@ import {
   matchFilters,
   nip19,
 } from 'nostr-tools';
-import { DiagnosticError } from '../../../diagnostics/src';
-import { validateManifest } from '../../../protocol/src/manifest';
-import { sourceGit, sourceUrls } from '../../../grasp/src/client';
+import { DiagnosticError } from '#diagnostics';
+import { validateManifest } from '#protocol/manifest';
+import { sourceGit, sourceUrls } from '#grasp/client';
 import {
   publishProject as publishCommitted,
   publicationStatus,
@@ -47,7 +47,7 @@ import { Journal, readJson } from '../journal';
 import { MAX_PUBLICATION_JOURNAL_BYTES } from '../limits';
 import { projectSchema } from '../config';
 import { newer } from '../relay';
-import { appReferences, descriptorImages } from '../../../protocol/src/preview';
+import { appReferences, descriptorImages } from '#protocol/preview';
 import { writeBinding } from '../binding';
 import { inspectProject } from '../project';
 

@@ -1,4 +1,4 @@
-import { appearanceBootstrap } from '../../packages/runtime/src/appearance';
+import { appearanceBootstrap } from '#runtime/appearance';
 import { readFile } from 'node:fs/promises';
 import type { PreviewAssets } from './assets';
 

@@ -1,7 +1,7 @@
-import { DiagnosticError, diagnose } from '../../diagnostics/src';
+import { DiagnosticError, diagnose } from '#diagnostics';
 import type { EventTemplate } from 'nostr-tools';
 import { CLIENT_TIMEOUTS, transferDeadline, type TransferDeadline } from './transfer';
-import { sha256, verifiedEvent, type SignedEvent } from '../../protocol/src';
+import { sha256, verifiedEvent, type SignedEvent } from '#protocol';
 import {
   blossomOrigin,
   HASH,

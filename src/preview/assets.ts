@@ -1,4 +1,4 @@
-import { DiagnosticError } from '../../packages/diagnostics/src';
+import { DiagnosticError } from '#diagnostics';
 export type PreviewAssets = { client: string; html: string };
 declare const NAPPLET_PREVIEW_ASSETS: PreviewAssets | undefined;
 let pending: Promise<PreviewAssets> | undefined;

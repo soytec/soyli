@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { PublishError, type Recording } from '../packages/publish/src/config';
+import { PublishError, type Recording } from '#publish/config';
 
 /** Let the creator reach the interesting moment before the existing capture encoder starts. */
 export async function waitForCapture(page: Page, recording?: Recording) {

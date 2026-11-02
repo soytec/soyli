@@ -3,13 +3,13 @@ import { PrivateKeySigner } from '@contextvm/sdk/signer';
 import { ApplesauceRelayPool } from '@contextvm/sdk/relay';
 import { computeCommonSchemaHash } from '@contextvm/sdk/core/utils/common-schema';
 import { generateSecretKey } from 'nostr-tools';
-import { verifySignature } from '../../protocol/src/verify';
+import { verifySignature } from '#protocol/verify';
 import {
   CvmConnection,
   validateProvider,
   type BackendProvider,
-} from '../../multiplayer/src/client';
-import { readRelayUrl } from '../../nostr/src/relay-policy';
+} from '#multiplayer/client';
+import { readRelayUrl } from '#nostr/relay-policy';
 import type { Tool } from '@modelcontextprotocol/sdk/types.js';
 import { BackendAccount, type BackendAccountOptions } from './backend-account';
 

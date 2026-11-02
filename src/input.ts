@@ -1,5 +1,5 @@
 import { createInterface } from 'node:readline/promises';
-import { AccountError } from '../packages/identity/src/signer';
+import { AccountError } from '#identity/signer';
 
 export async function ask(text: string, signal?: AbortSignal) {
   const input = createInterface({ input: process.stdin, output: process.stderr });

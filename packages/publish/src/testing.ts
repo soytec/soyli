@@ -2,7 +2,7 @@
 import { mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { freezeSource } from './project';
-import { sourceGit } from '../../grasp/src/client';
+import { sourceGit } from '#grasp/client';
 export async function freezeFixture(
   directory: string,
   contents: Map<string, Uint8Array>,

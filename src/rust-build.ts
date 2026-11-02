@@ -1,12 +1,12 @@
 import { lstat, mkdir, rename, rm, writeFile } from 'node:fs/promises';
 import { join, resolve } from 'node:path';
 import { homedir } from 'node:os';
-import { DiagnosticError, diagnose, formatDiagnostic } from '../packages/diagnostics/src';
-import { projectSchema, type Build } from '../packages/publish/src/config';
-import { regularFile } from '../packages/publish/src/project';
-import { builtConfiguration } from '../packages/publish/src/artifact';
-import { MAX_ARTIFACT_BYTES } from '../packages/protocol/src';
-import { validateConfigSchema } from '../packages/runtime/src/config-schema';
+import { DiagnosticError, diagnose, formatDiagnostic } from '#diagnostics';
+import { projectSchema, type Build } from '#publish/config';
+import { regularFile } from '#publish/project';
+import { builtConfiguration } from '#publish/artifact';
+import { MAX_ARTIFACT_BYTES } from '#protocol';
+import { validateConfigSchema } from '#runtime/config-schema';
 import { projectEnvironment, runProjectCommand } from './project-process';
 
 type RustBuild = Extract<Build, { kind: 'rust' }>;

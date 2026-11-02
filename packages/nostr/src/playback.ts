@@ -3,12 +3,12 @@ import { RelayPool } from 'applesauce-relay';
 import { matchFilters, nip19, type Filter } from 'nostr-tools';
 import { defer, NEVER, Subscription, take, takeUntil, timer, type Observable } from 'rxjs';
 import { z } from 'zod';
-import { verifiedEvent, type SignedEvent } from '../../protocol/src';
+import { verifiedEvent, type SignedEvent } from '#protocol';
 import { readRelayUrl } from './relay-policy';
 import { OutboxRelayPlanner } from './outbox-routing';
 import { OutboxEventStore } from './outbox-store';
-import { diagnose, DiagnosticError, formatDiagnostic } from '../../diagnostics/src';
-import { APP_DATA_KIND, APP_DATA_PROFILE } from '../../app-data/src/app-data-contract';
+import { diagnose, DiagnosticError, formatDiagnostic } from '#diagnostics';
+import { APP_DATA_KIND, APP_DATA_PROFILE } from '#app-data/app-data-contract';
 
 const hex = z.string().regex(/^[a-f0-9]{64}$/);
 const hexes = z.array(hex).max(64);
