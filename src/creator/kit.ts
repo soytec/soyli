@@ -54,6 +54,14 @@ viewports in the host; desktop startup checks alone do not establish mobile supp
 Prepare representative landscape and portrait promotional media when tooling allows,
 and report missing coverage honestly. Never invent a portrait recording option.
 
+Controller support is optional. When implementing controller support, cover the
+entire napplet. Read docs/napplet-controllers.md and follow its acceptance checklist.
+Every existing app-owned screen and action must work with a controller: title/start,
+menus, settings/options, main interaction, pause/resume, restart/retry,
+results/next-level and back/cancel/exit. A playable main scene with pointer-only
+menus is incomplete. Preserve keyboard/touch alternatives, focus-aware input and
+browser policy limits; do not inject a Gamepad shim to bypass them.
+
 ## Commands
 
 - The project is already scaffolded. Do not run another creator CLI or re-scaffold it.
@@ -134,7 +142,9 @@ and report missing coverage honestly. Never invent a portrait recording option.
 - For USB/Bluetooth game controllers, read docs/napplet-controllers.md and use
   docs/examples/gamepad.ts. The Controller tester in soyli dev checks buttons,
   axes, dead zones and test mappings inside the real sandbox. Wire named actions
-  into your game; retain keyboard/touch input and handle disconnect/focus/pause.
+  into the whole napplet, including menus and settings; retain keyboard/touch input
+  and handle disconnect/focus/pause. Verify a controller-only journey through every
+  existing screen, with visible selection, confirm/back and no held-button leakage.
   Use the native Gamepad API, not SERIAL or an invented gamepad NAP requirement.
   Test actual controllers as well as synthetic input; soyli check is not a hardware test.
 - soyli screenshot saves preview.png and selects it in napplet.json.
@@ -577,7 +587,7 @@ files are reported as conflicts and preserved. Template/source changes are never
 applied by that command.
 `;
 
-const pointer = `## napplet soyLI workspace\n\nRead [docs/napplet-space.md](docs/napplet-space.md) first for this project's CLI commands, installed skills, preview cleanup and host capabilities. Read [docs/napplet-visual-design.md](docs/napplet-visual-design.md) before styling the creation and its UI. This project and its adapted skills are already installed; do not re-scaffold or reinstall them. Use soyli dev and its printed URL for hosted preview, and stop your preview session after testing. Use the upstream guidance below with those tooling mappings.\n\n`;
+const pointer = `## napplet soyLI workspace\n\nRead [docs/napplet-space.md](docs/napplet-space.md) first for this project's CLI commands, installed skills, preview cleanup and host capabilities. Read [docs/napplet-visual-design.md](docs/napplet-visual-design.md) before styling the creation and its UI. When implementing controller support, read [docs/napplet-controllers.md](docs/napplet-controllers.md) and cover the entire napplet, including menus, settings, pause, restart and back navigation. This project and its adapted skills are already installed; do not re-scaffold or reinstall them. Use soyli dev and its printed URL for hosted preview, and stop your preview session after testing. Use the upstream guidance below with those tooling mappings.\n\n`;
 
 export function creatorSkills() {
   const files: Record<string, string> = {
