@@ -11,7 +11,7 @@ import { PublishError, targetsSchema, intentSchema } from './config.ts';
 import { MAX_SOURCE_FILES, MAX_PUBLICATION_JOURNAL_BYTES } from './limits.ts';
 import { checkReportSchema } from './check-report.ts';
 import {
-  MANIFEST_PRESENTATION_PROFILE,
+  DIRECT_PRESENTATION_PROFILES,
   manifestScreenshots,
   manifestPreviewVideo,
 } from '#src/protocol/presentation.ts';
@@ -81,7 +81,7 @@ export const jobSchema = z
   .object({
     version: z.literal(1),
     // Absent on previously frozen jobs: resume their original linked descriptor.
-    presentationProfile: z.literal(MANIFEST_PRESENTATION_PROFILE).optional(),
+    presentationProfile: z.enum(DIRECT_PRESENTATION_PROFILES).optional(),
     id: hash,
     fingerprint: hash,
     // Absent in older journals: preserve their automatically paired publication.
@@ -187,7 +187,7 @@ export const jobSchema = z
         (job.snapshotMode === 'none' || !!job.snapshot) &&
         (!job.preview ||
           (job.receipts.preview === true &&
-            (job.presentationProfile === MANIFEST_PRESENTATION_PROFILE
+            (job.presentationProfile
               ? !job.preview.descriptor &&
                 [job.current, ...(job.snapshotMode === 'none' ? [] : [job.snapshot])].every(
                   (event) =>
@@ -198,7 +198,7 @@ export const jobSchema = z
                 )
               : !!job.preview.descriptor && job.receipts.descriptor === true))) &&
         (!job.video ||
-          job.presentationProfile !== MANIFEST_PRESENTATION_PROFILE ||
+          !job.presentationProfile ||
           [job.current, ...(job.snapshotMode === 'none' ? [] : [job.snapshot])].every(
             (event) => !!event && manifestPreviewVideo(event)?.hash === job.video!.hash,
           )) &&

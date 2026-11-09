@@ -9,6 +9,7 @@ import {
 import { migrationTemplate } from '#src/services/migration.ts';
 import {
   MANIFEST_PRESENTATION_PROFILE,
+  NIP5D_PRESENTATION_PROFILE,
   manifestScreenshotSources,
   manifestVideoSources,
 } from '#src/protocol/presentation.ts';
@@ -69,7 +70,7 @@ const previewPng = new Uint8Array(
   ),
 );
 
-async function fixture() {
+async function fixture(network: 'local' | 'public' = 'local') {
   const root = await mkdtemp(join(tmpdir(), 'napplet-publish-'));
   const project = join(root, 'project');
   const config = {
@@ -96,7 +97,7 @@ async function fixture() {
       secrets.delete(id);
     },
   };
-  const accounts = new Accounts('local', join(root, 'accounts'), vault);
+  const accounts = new Accounts(network, join(root, 'accounts'), vault);
   const creator = await accounts.create();
   const events = new Map<string, SignedEvent[]>();
   const blobs = new Map<string, Uint8Array>();
@@ -167,13 +168,13 @@ async function fixture() {
   };
   const options: PublishOptions = {
     directory: project,
-    network: 'local',
+    network,
     accounts,
     check: async () => ({ profile: 'test', browser: 'test' }),
     snapshot: true, // These historical paired-publication cases opt into the extra copy.
     dependencies: deps,
   };
-  const journal = new Journal(project, 'local');
+  const journal = new Journal(project, network);
   const load = async () => {
     const index = await journal.index();
     return journal.load((index.active ?? index.latest)!);
@@ -523,10 +524,15 @@ test('preview upload and direct manifest references survive interruption with id
     expect(appReferences(interrupted.current!)).toEqual([]);
     expect(interrupted.preview!.descriptor).toBeUndefined();
     expect(interrupted.receipts.descriptor).toBeUndefined();
+    // New releases use NIP-5D presentation media (PR 2303 at c041f84), no Soy profile tag.
+    expect(interrupted.presentationProfile).toBe(NIP5D_PRESENTATION_PROFILE);
     expect(interrupted.current!.tags).toContainEqual([
-      'presentation',
-      MANIFEST_PRESENTATION_PROFILE,
+      'screenshot',
+      `x ${await sha256(previewPng)}`,
+      'm image/png',
+      `size ${previewPng.length}`,
     ]);
+    expect(interrupted.current!.tags.some((t) => t[0] === 'presentation')).toBe(false);
     expect(manifestScreenshotSources(interrupted.current!).map((c) => c.url)).toEqual([
       `${interrupted.plan.targets.blossom}/${await sha256(previewPng)}`,
     ]);
@@ -579,6 +585,14 @@ for (const snapshot of [false, true]) {
       });
       expect(f.blobs.get(interrupted.preview!.hash)).toEqual(previewPng);
       expect(f.blobs.get(interrupted.video!.hash)).toEqual(video);
+      expect(interrupted.current!.tags).toContainEqual([
+        'preview',
+        `x ${interrupted.video!.hash}`,
+        'm video/webm',
+        `dim ${interrupted.video!.width}x${interrupted.video!.height}`,
+        `size ${video.length}`,
+        `duration ${interrupted.video!.durationMs / 1000}`,
+      ]);
       expect(
         manifestVideoSources(interrupted.current!).map(({ url, hash }) => ({ url, hash })),
       ).toEqual([
@@ -651,6 +665,76 @@ test('older releases gain a preview without code edits; Blossom can change on a 
   }
 });
 
+test('public publication writes an explicit source archive hash and MIME on both manifests', async () => {
+  const f = await fixture('public');
+  try {
+    await publishProject(f.options);
+    const job = await f.load();
+    const archive = [
+      'source-archive',
+      `${job.plan.targets.blossom}/${job.archiveHash}`,
+      job.archiveHash,
+      'application/x-tar',
+    ];
+    expect(job.current!.tags).toContainEqual(archive);
+    expect(job.snapshot!.tags).toContainEqual(archive);
+    expect(await sha256(f.blobs.get(job.archiveHash)!)).toBe(job.archiveHash);
+    await publishProject({ ...f.options, resume: true });
+    expect((await f.load()).current).toEqual(job.current);
+    expect((await f.load()).snapshot).toEqual(job.snapshot);
+  } finally {
+    await f.close();
+  }
+});
+
+for (const signed of [false, true]) {
+  test(`a frozen ${signed ? 'signed' : 'unsigned'} soy.presentation/1 job resumes with its original tags and signatures`, async () => {
+    const f = await fixture();
+    try {
+      f.options.requirePreview = true;
+      const video = await Bun.file(
+        new URL('../../../../tests/fixtures/preview.webm', import.meta.url),
+      ).bytes();
+      f.options.check = async () => ({
+        profile: 'test',
+        browser: 'test',
+        preview: previewPng,
+        video,
+      });
+      let interrupted = false;
+      f.deps.checkpoint = async (job) => {
+        if (!job.source && !interrupted) {
+          interrupted = true;
+          // Simulate a job frozen by the previous CLI, before it signed anything.
+          job.presentationProfile = MANIFEST_PRESENTATION_PROFILE;
+          await f.journal.save(job);
+          if (!signed) throw new Error('Old process stopped before signing');
+        }
+        if (signed && job.current) throw new Error('Old process stopped after signing');
+      };
+      await expect(publishProject(f.options)).rejects.toMatchObject({ code: 'PUBLISH_FAILED' });
+      const pending = await f.load();
+      expect(!!pending.current).toBe(signed);
+      delete f.deps.checkpoint;
+      await publishProject({ ...f.options, resume: true });
+      const job = await f.load();
+      expect(job.presentationProfile).toBe(MANIFEST_PRESENTATION_PROFILE);
+      expect(job.status).toBe('announced_pending_index');
+      expect(job.current!.tags).toContainEqual(['presentation', MANIFEST_PRESENTATION_PROFILE]);
+      expect(job.current!.tags).toContainEqual(['screenshot', job.preview!.hash, 'image/png']);
+      expect(job.current!.tags).toContainEqual(['preview', job.video!.hash, 'video/webm']);
+      expect(job.current!.tags.find((t) => t[0] === 'source-archive')).toHaveLength(2);
+      expect(manifestScreenshotSources(job.current!)).toHaveLength(1);
+      if (signed) {
+        expect(job.current).toEqual(pending.current);
+        expect(job.snapshot).toEqual(pending.snapshot);
+      }
+    } finally {
+      await f.close();
+    }
+  });
+}
+
 for (const snapshot of [false, true]) {
   test(`${snapshot ? 'paired' : 'named-only'} frozen descriptor jobs resume unchanged, then migrate on an explicit fresh publication`, async () => {
     const f = await fixture();
@@ -680,7 +764,7 @@ for (const snapshot of [false, true]) {
       expect((await f.load()).current).toEqual(signed);
       await publishProject(f.options);
       const fresh = await f.load();
-      expect(fresh.presentationProfile).toBe(MANIFEST_PRESENTATION_PROFILE);
+      expect(fresh.presentationProfile).toBe(NIP5D_PRESENTATION_PROFILE);
       expect(fresh.plan.artifactHash).toBe(old.plan.artifactHash);
       expect(fresh.plan.identifier).toBe(old.plan.identifier);
       expect(fresh.plan.pubkey).toBe(old.plan.pubkey);
@@ -1268,10 +1352,7 @@ test('a repeated publication repairs missing relay events/blobs and retries fail
         [
           ...(process.env.SPACE_TEST_CLI
             ? [process.env.SPACE_TEST_CLI]
-            : [
-                process.execPath,
-                new URL('../../../index.ts', import.meta.url).pathname,
-              ]),
+            : [process.execPath, new URL('../../../index.ts', import.meta.url).pathname]),
           'status',
           '--project',
           f.project,
