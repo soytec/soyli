@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { manifestSourceCommit } from './source-archive.ts';
 import { identityAddress, type SignedEvent } from './events.ts';
 import { legacySnapshotAddress, validateManifest } from './manifest.ts';
 
@@ -24,7 +25,7 @@ export async function remixLineage(manifest: SignedEvent) {
   if (!parent && release.format === 'legacy') throw new Error('Invalid remix parent');
   const origins = manifest.tags.filter((t) => t[0] === 'A');
   if (origins.length > 1) throw new Error('Ambiguous remix origin');
-  const sourceCommit = manifest.tags.find((t) => t[0] === 'source-commit')?.[1];
+  const sourceCommit = manifestSourceCommit(manifest.tags);
   return remixSchema.parse({
     ...(parent ? { parent } : {}),
     // A standalone snapshot has no own address. Preserve its exact event as

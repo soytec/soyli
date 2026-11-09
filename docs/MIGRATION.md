@@ -35,6 +35,14 @@ both supported Playwright profiles and ws alongside the executable. Keep `dist/l
 with the binary when relocating it. Browser installation is a separate, on-demand
 operation, as in the original CLI.
 
+The NIP-5D media/source migration ports behavior from napplet-soy's
+`50005bf774c38a0e094e207e3c0f0779ce5a6c19`, with standalone imports and tests.
+Fresh publication uses the `c041f84` screenshot/preview and HTTPS source-archive
+forms. Legacy media and archives remain readable; frozen journal jobs preserve
+their original signatures. Standard media readers also accept an omitted MIME
+and retain the first eight usable screenshots. See [creator metadata](NIP5D-CREATOR.md).
+This is a source change, not a standalone release or installer-channel cutover.
+
 ## Remaining release work
 
 - The imported version metadata remains the upstream CLI version; package.json's
@@ -52,6 +60,14 @@ required by the CLI's publishing and toolchain behavior. Self-contained here mea
 all CLI implementation and bundled resources belong to this repository.
 
 ## Verification
+
+The 2026-11-09 media/source migration passes type checking, the full 188-test suite,
+a native executable build and the relocated-distribution smoke test on Bun 1.4.3 /
+macOS ARM64. The final shared-reader synchronization separately passes all 11
+protocol tests, including optional MIME, duplicate fields, eight-item subsets and
+legacy compatibility. Publication tests verify exact new tags, public archive hashes,
+and both signed and unsigned frozen legacy media jobs. No public publication,
+release or installer-channel change was performed.
 
 The 2026-11-01 sync passes 154 tests across 29 files, type checking, a host
 executable build and the relocated-distribution smoke test on Bun 1.4.3/Linux

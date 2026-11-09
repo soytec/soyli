@@ -2,8 +2,10 @@
 
 Fresh `soyli publish` and playable proposal previews use the standalone NIP-5D
 manifest from [dskvr/nips PR #7 at 4d0fb2e](https://github.com/dskvr/nips/blob/4d0fb2e9fa1fdca71be09b17a4c5f382fbca5d51/5D.md).
-PR #7 merged at this revision on 2026-10-04; its unchanged head was verified on
-2026-10-05. The installed SDK, shim and Vite plugin keep their separately recorded pins.
+The presentation media and source fields now follow [NIP-5D PR #2303 at
+c041f84](https://github.com/dskvr/nips/blob/c041f84667c1781c3c1d5bfbd970943131b38cc9/5D.md).
+The installed SDK, shim and Vite plugin keep their separately recorded pins; this
+media migration does not claim the later runtime transport changes are implemented.
 
 Edit `napplet.json`, use `soyli project show` / `soyli project set metadata.json`,
 or open **Capabilities and discovery** in `soyli dev`. These edits are ordinary
@@ -88,11 +90,31 @@ back without blocking playback. SVG icons are not supported.
 
 Fresh soyLI publications put screenshots and preview clips directly on the signed
 current manifest and, when `publish --snapshot` is requested, its snapshot. They
-use the optional downstream `soy.presentation/1` convention and no longer create
-Zapstore kind-32267 descriptors. The selected PR revision does not
-define these fields; they are explicitly a Soy extension pending upstream agreement,
-never a playback requirement. Existing descriptors remain readable. See the
-[exact media tags and limits](https://github.com/zeSchlausKwab/napplet-soy/blob/main/docs/PREVIEWS.md#direct-manifest-presentation--2026-10-06-source).
+use NIP-92-style fields in NIP-5D `screenshot` and `preview` tags, with no
+`presentation` marker or new Zapstore kind-32267 descriptor:
+
+```json
+[
+  ["screenshot", "x <sha256>", "m image/png", "size 184320"],
+  ["preview", "x <sha256>", "m video/webm", "dim 960x600", "size 524288", "duration 8.5"],
+  ["source-archive", "https://blossom.example/<sha256>", "<sha256>", "application/x-tar"]
+]
+```
+
+Publishing still selects one PNG cover and at most one WebM clip. The PNG is
+limited to 5 MiB and 4096 × 4096 pixels; clips retain their existing 5 MiB,
+1200 × 750 and 12-second limits. Screenshot dimensions are not recorded, so the
+recommended `dim` field is omitted. Local HTTP publication retains the legacy
+two-element `source-archive`; the standard archive form requires HTTPS.
+
+Readers retain up to eight usable standard or legacy screenshots in order. A missing,
+malformed or repeated optional MIME field does not hide a valid hash reference;
+media consumers must verify the fetched bytes and supported format before display.
+Explicit unsupported formats are skipped. Multiple `preview` tags disable the clip.
+Legacy `soy.presentation/1` media and linked descriptors remain readable, and
+frozen publication jobs keep their original tags and signatures when resumed.
+Optional presentation or source metadata never becomes a playback requirement.
+
 Capture representative gameplay or interaction, including useful mobile presentation
 assets where supported.
 
