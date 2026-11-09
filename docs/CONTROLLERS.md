@@ -1,11 +1,33 @@
 # Controllers — native Gamepad input
 
-soyLI 0.16.0 adds a **Controller tester** in the `soyli dev` workshop and a
-dependency-free input helper for creators. These are local source changes until
-the release is published. Ordinary USB/Bluetooth gamepads use the browser's
+soyLI includes a **Controller tester** in the `soyli dev` workshop and a
+dependency-free input helper for creators. Ordinary USB/Bluetooth gamepads use the browser's
 [Gamepad API](https://www.w3.org/TR/gamepad/), not NAP-SERIAL. No server, CVM,
 account, new NAP domain or `requires` entry is needed. No shim/SDK/protocol pin
 changes are involved. Existing games must explicitly wire their actions to input.
+
+## Support the whole napplet
+
+Controller support is optional. When implementing controller support, cover the
+entire napplet. Wire every existing app-owned screen and action: title/start,
+menus, settings/options, gameplay or main interaction, pause/resume,
+restart/retry, results/next-level, and back/cancel/exit. A playable main scene
+with pointer-only menus is incomplete.
+Do not invent screens that the experience does not need.
+
+Give each screen a visible selection and predictable navigation, confirm and back
+actions. Make every setting usable, including selections, toggles, sliders and text
+entry where needed. Route input only to the active screen or topmost app dialog;
+gameplay must not consume the same input behind a menu. Require a fresh press for
+confirmation/cancellation across screen or focus changes, so a held button cannot
+start, restart or dismiss the next screen accidentally. Keep keyboard and
+pointer/touch alternatives and the focus-aware behavior described below.
+
+Use native Gamepad input when the browser exposes it. Respect unavailable/blocked
+states and any initial browser focus or activation gesture; report that limit and
+retain fallback controls. This requirement covers app-owned UI, not shell menus,
+browser prompts or host approvals. Do not inject a Gamepad shim, override browser
+policy, capture input while unfocused or invent a host API to force access.
 
 ## Try a controller
 
@@ -96,9 +118,17 @@ localStorage. Never assume Xbox/PlayStation lettering has identical names.
 
 ## Agent acceptance checklist
 
-- Connect named actions to gameplay and essential menus. Always keep keyboard
-  and pointer/touch paths appropriate to the device; controller support is optional.
-  Merge sources in one input layer. Clear keyboard/touch state on blur as well.
+Apply this checklist when controller support is included.
+
+- After any initial browser focus/activation gesture, complete a controller-only
+  journey through every existing screen: start, main interaction, pause, settings,
+  resume, restart/retry, results/next-level and back/exit. Confirm visible focus,
+  access to every setting, and no mouse, touch or keyboard-only traps. Mark absent
+  screens as not applicable; report blocked input instead of claiming a pass.
+- Verify confirm/back once per press, controlled navigation repeat, and no held
+  button leaking across screens or into gameplay behind a menu. Test nested dialogs
+  and return focus to a useful control. Merge input sources in one layer; clear
+  keyboard/touch state on blur as well as controller state.
 - Poll once per animation frame and feed the resulting input into the existing
   simulation. Consume an edge once, even when a frame runs several physics steps.
   Multiplayer sends game actions over the game's transport, not every controller
