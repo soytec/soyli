@@ -532,3 +532,26 @@ republishing without score reset, and remix isolation. Run both the upstream
 conformance suite and `soyli check`; capability presence alone does not prove an
 entire game works. The local upstream reference shell may expose a different
 capability profile; the soyLI preview is the target host.
+
+### Optional realtime delivery (proposal #145)
+
+Reliable ordered `webrtc.send()` stays the default. A host implementing
+NAP-WEBRTC #145 (`69b8f0b367e3e204ce522b5369d446974b11459a`) can open a separate
+`{ordered:false, maxRetransmits:0}` session for replaceable state. Inspect actual
+returned settings; keep start/end/lobby and one-shot actions on reliable control.
+Use monotonic ticks/sequences, reject stale updates and coalesce obsolete state
+under backpressure. Local prediction and reconciliation still matter.
+
+The optional injected `webrtc.sendBytes(id, canonicalBase64)` produces `bytes`
+events, separate from JSON `message` events. Prefer an SDK exposing this operation;
+SDKs that predate it need a narrowly typed optional injected-domain adapter, never
+an application-owned MessagePort or signaling bypass. Check both binding and
+peer application capabilities. Respect advertised `maxPayloadBytes` (Soy: 16 KiB).
+`unsupported` and `QUEUE_FULL` send nothing; a timeout is delivery-unknown, so do
+not resend that same binary payload as JSON. A success is only locally queued.
+One departing peer does not imply the room has closed. Guest `from` keys are
+transport identities, not verified profile identities. Statistics are optional.
+
+Soy's signed `soy-rtc/realtime-1` capability negotiation is a host implementation
+choice, not an accepted upstream cross-shell signaling contract. Other shells
+may provide the same API using different signaling.

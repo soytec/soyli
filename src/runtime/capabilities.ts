@@ -37,7 +37,7 @@ export const HOST_REQUESTS = new Set(
       'registry.describe',
       'registry.call',
     ],
-    webrtc: ['open', 'send', 'close'],
+    webrtc: ['open', 'send', 'sendBytes', 'close'],
     config: ['registerSchema', 'get', 'subscribe', 'unsubscribe', 'openSettings'],
     identity: [
       'getPublicKey',

@@ -1,0 +1,37 @@
+--- a/dist/prelude.global.js
++++ b/dist/prelude.global.js
+@@ -3451,6 +3451,8 @@
+     "webrtc.open.result",
+     "webrtc.send",
+     "webrtc.send.result",
++    "webrtc.sendBytes",
++    "webrtc.sendBytes.result",
+     "webrtc.close",
+     "webrtc.close.result",
+     "webrtc.event"
+@@ -3514,6 +3516,17 @@
+       (msg) => {
+         if (msg.type === "webrtc.send.result" && !msg.error) return void 0;
+         rejectResult(msg, "webrtc send failed");
++      }
++    );
++  }
++  function sendBytes2(sessionId, bytes) {
++    // No JSON retry here: a timeout leaves delivery unknown.
++    return request2(
++      { type: "webrtc.sendBytes", id: crypto.randomUUID(), sessionId, bytes },
++      "webrtc.sendBytes.result",
++      (msg) => {
++        if (msg.type === "webrtc.sendBytes.result" && !msg.error) return void 0;
++        rejectResult(msg, "webrtc sendBytes failed");
+       }
+     );
+   }
+@@ -4879,6 +4892,7 @@
+       napplet.webrtc = {
+         open: open3,
+         send: send2,
++        sendBytes: sendBytes2,
+         close: close2,
+         onEvent: onEvent2
+       };

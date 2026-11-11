@@ -687,7 +687,7 @@ export function attachNappletHost(options: HostOptions) {
       return;
     }
     if (!intent && size > 360000) return;
-    const realtime = message.type === 'webrtc.send';
+    const realtime = message.type === 'webrtc.send' || message.type === 'webrtc.sendBytes';
     if (Date.now() - rtcWindow >= 1000) {
       rtcWindow = Date.now();
       rtcCalls = 0;

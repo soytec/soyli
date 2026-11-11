@@ -1,0 +1,282 @@
+{
+  "date": "2026-11-11",
+  "scope": "Isolated Chromium contexts, disposable signaling/CVM, forced loopback TURN. Simulated message-level conditions, not Internet or packet-level SCTP verification.",
+  "beforeGame": "1d539a5",
+  "beforeRuntime": "4e61ee4b71138ddacf423235626d3b8f6cdf5263",
+  "proposal145": "69b8f0b367e3e204ce522b5369d446974b11459a",
+  "cases": {
+    "before-final": {
+      "artifactHash": "434eecd409c2b38f5ecb4266db50ced44c1b42c493117ce043e98ac09e2ba722",
+      "status": "passed",
+      "durationMs": 30334,
+      "phases": [
+        {
+          "latencyMs": 50,
+          "pendingP50": 41,
+          "pendingP95": 49,
+          "pendingMax": 52
+        },
+        {
+          "latencyMs": 200,
+          "pendingP50": 51,
+          "pendingP95": 56,
+          "pendingMax": 58
+        },
+        {
+          "latencyMs": 50,
+          "pendingP50": 43,
+          "pendingP95": 50,
+          "pendingMax": 54
+        }
+      ],
+      "traffic": [
+        {
+          "bytes": 1088422,
+          "messages": 325,
+          "binary": 0,
+          "p95Bytes": 3623
+        },
+        {
+          "ackMsP50": 702.3999998569489,
+          "ackMsP95": 886.2999999523163,
+          "bytes": 1198912,
+          "messages": 315,
+          "binary": 0,
+          "p95Bytes": 4686
+        }
+      ],
+      "simulated": [
+        {
+          "latencyMs": 50,
+          "jitterMs": 15,
+          "seed": 1,
+          "delayedMessages": 385,
+          "peakQueuedBytes": 18381,
+          "queuedBytes": 3597
+        },
+        {
+          "latencyMs": 50,
+          "jitterMs": 15,
+          "seed": 2,
+          "delayedMessages": 324,
+          "peakQueuedBytes": 23952,
+          "queuedBytes": 7718
+        }
+      ]
+    },
+    "after-final": {
+      "artifactHash": "49a9d499a8d22624717a5d4aa7ea5ec9e9b1930bb2abdd62511edfade1fca786",
+      "status": "passed",
+      "durationMs": 30258,
+      "phases": [
+        {
+          "latencyMs": 50,
+          "pendingP50": 26,
+          "pendingP95": 31,
+          "pendingMax": 38
+        },
+        {
+          "latencyMs": 200,
+          "pendingP50": 43,
+          "pendingP95": 49,
+          "pendingMax": 51
+        },
+        {
+          "latencyMs": 50,
+          "pendingP50": 27,
+          "pendingP95": 34,
+          "pendingMax": 45
+        }
+      ],
+      "traffic": [
+        {
+          "bytes": 192130,
+          "messages": 353,
+          "binary": 318,
+          "p95Bytes": 592
+        },
+        {
+          "ackMsP50": 468.09999990463257,
+          "ackMsP95": 760.5,
+          "bytes": 16296,
+          "messages": 341,
+          "binary": 317,
+          "p95Bytes": 48
+        }
+      ],
+      "simulated": [
+        {
+          "lossRatio": 0,
+          "retransmitMs": 200,
+          "latencyMs": 50,
+          "jitterMs": 15,
+          "seed": 1,
+          "delayedMessages": 427,
+          "droppedMessages": 0,
+          "retransmissions": 0,
+          "binaryMessages": 378,
+          "sentBytes": 233388,
+          "peakQueuedBytes": 4221,
+          "queuedBytes": 1438
+        },
+        {
+          "lossRatio": 0,
+          "retransmitMs": 200,
+          "latencyMs": 50,
+          "jitterMs": 15,
+          "seed": 2,
+          "delayedMessages": 355,
+          "droppedMessages": 0,
+          "retransmissions": 0,
+          "binaryMessages": 321,
+          "sentBytes": 16931,
+          "peakQueuedBytes": 240,
+          "queuedBytes": 96
+        }
+      ]
+    },
+    "before-loss": {
+      "artifactHash": "434eecd409c2b38f5ecb4266db50ced44c1b42c493117ce043e98ac09e2ba722",
+      "status": "passed",
+      "durationMs": 30253,
+      "phases": [
+        {
+          "latencyMs": 50,
+          "pendingP50": 55,
+          "pendingP95": 65,
+          "pendingMax": 70
+        },
+        {
+          "latencyMs": 200,
+          "pendingP50": 70,
+          "pendingP95": 81,
+          "pendingMax": 85
+        },
+        {
+          "latencyMs": 50,
+          "pendingP50": 65,
+          "pendingP95": 74,
+          "pendingMax": 78
+        }
+      ],
+      "traffic": [
+        {
+          "bytes": 1107795,
+          "messages": 329,
+          "binary": 0,
+          "p95Bytes": 3630
+        },
+        {
+          "ackMsP50": 957.7999999523163,
+          "ackMsP95": 1207,
+          "bytes": 1666672,
+          "messages": 316,
+          "binary": 0,
+          "p95Bytes": 6861
+        }
+      ],
+      "simulated": [
+        {
+          "lossRatio": 0.25,
+          "retransmitMs": 250,
+          "latencyMs": 50,
+          "jitterMs": 95,
+          "seed": 1,
+          "delayedMessages": 398,
+          "droppedMessages": 0,
+          "retransmissions": 66,
+          "binaryMessages": 0,
+          "sentBytes": 1283675,
+          "peakQueuedBytes": 36444,
+          "queuedBytes": 3913
+        },
+        {
+          "lossRatio": 0.25,
+          "retransmitMs": 250,
+          "latencyMs": 50,
+          "jitterMs": 95,
+          "seed": 2,
+          "delayedMessages": 325,
+          "droppedMessages": 0,
+          "retransmissions": 78,
+          "binaryMessages": 0,
+          "sentBytes": 1674247,
+          "peakQueuedBytes": 69642,
+          "queuedBytes": 33120
+        }
+      ]
+    },
+    "after-loss": {
+      "artifactHash": "49a9d499a8d22624717a5d4aa7ea5ec9e9b1930bb2abdd62511edfade1fca786",
+      "status": "passed",
+      "durationMs": 30252,
+      "phases": [
+        {
+          "latencyMs": 50,
+          "pendingP50": 27,
+          "pendingP95": 40,
+          "pendingMax": 46
+        },
+        {
+          "latencyMs": 200,
+          "pendingP50": 45,
+          "pendingP95": 53,
+          "pendingMax": 58
+        },
+        {
+          "latencyMs": 50,
+          "pendingP50": 29,
+          "pendingP95": 40,
+          "pendingMax": 45
+        }
+      ],
+      "traffic": [
+        {
+          "bytes": 187896,
+          "messages": 344,
+          "binary": 311,
+          "p95Bytes": 592
+        },
+        {
+          "ackMsP50": 458.90000009536743,
+          "ackMsP95": 805,
+          "bytes": 15912,
+          "messages": 333,
+          "binary": 309,
+          "p95Bytes": 48
+        }
+      ],
+      "simulated": [
+        {
+          "lossRatio": 0.25,
+          "retransmitMs": 250,
+          "latencyMs": 50,
+          "jitterMs": 95,
+          "seed": 1,
+          "delayedMessages": 348,
+          "droppedMessages": 68,
+          "retransmissions": 11,
+          "binaryMessages": 370,
+          "sentBytes": 228308,
+          "peakQueuedBytes": 4221,
+          "queuedBytes": 592
+        },
+        {
+          "lossRatio": 0.25,
+          "retransmitMs": 250,
+          "latencyMs": 50,
+          "jitterMs": 95,
+          "seed": 2,
+          "delayedMessages": 283,
+          "droppedMessages": 64,
+          "retransmissions": 4,
+          "binaryMessages": 313,
+          "sentBytes": 16538,
+          "peakQueuedBytes": 288,
+          "queuedBytes": 48
+        }
+      ]
+    }
+  },
+  "method": "Each race drives for 15 seconds: 5 seconds each at 50, 200, 50 ms one-way delay. Normal jitter \u00b115 ms; loss cases \u00b195 ms, 25% transient drops/reliable retransmission delay of 250 ms. Before-loss uses the new host/lab with the old frozen app to keep the loss model identical. Send-to-authoritative-ACK timing is observed by the guest; not render latency or native RTT. Byte counts exclude transport overhead; total counts vary with scheduling."
+}
