@@ -150,9 +150,11 @@ Verification on 2026-11-11:
 - Nix: `scripts/nix-update-hashes.sh` measured the changed shim dependency output,
   then completed forced dependency/CLI rebuilds and `nix flake check`, including
   x86_64 Linux KVM module regressions on an isolated existing builder. AArch64
-  checks were not run. Only the exact nodeModules output hash changed. This run
-  preceded the final payload error-message wording; those final wording tests pass
-  locally; the exact final tree has not yet repeated the Nix check.
+  checks were not run. Only the exact nodeModules output hash changed. The final
+  implementation, including payload error-message wording, passed a fresh
+  `scripts/nix-check.sh` run: forced dependency/CLI rebuilds and the x86_64 KVM
+  regressions completed successfully. Changed implementation, test, packaging
+  and embedded-guide files were hash-checked against the local shell commit.
 - A same-process sequence of multiplayer test services stalled during cleanup;
   acceptance commands were rerun in fresh processes. No production changes.
 
