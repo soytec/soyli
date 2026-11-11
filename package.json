@@ -54,5 +54,8 @@
     "@types/react-dom": "19.3.0",
     "@types/ws": "8.18.1",
     "typescript": "7.0.2"
+  },
+  "patchedDependencies": {
+    "@napplet/shim@0.31.0": "patches/@napplet%2Fshim@0.31.0.patch"
   }
 }

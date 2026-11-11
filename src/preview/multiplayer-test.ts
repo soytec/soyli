@@ -359,7 +359,7 @@ export async function testMultiplayer(
     peers: routes,
     simulated,
     scope:
-      'Creator scenario assertions on a local frozen build. No public-network, packet-loss or whole-game certification.',
+      'Creator scenario assertions on a local frozen build. Message-level simulated conditions only; no public-network, packet-level SCTP or whole-game certification.',
   };
   await mkdir(dirname(reportPath), { recursive: true });
   await Bun.write(reportPath, JSON.stringify(report, null, 2) + '\n');
@@ -367,5 +367,5 @@ export async function testMultiplayer(
 }
 
 function optionsToNetwork(options: NetworkConditions): NetworkConditions {
-  return { latencyMs: options.latencyMs, jitterMs: options.jitterMs, seed: options.seed };
+  return { latencyMs: options.latencyMs, jitterMs: options.jitterMs, seed: options.seed, lossRatio: options.lossRatio, retransmitMs: options.retransmitMs };
 }
