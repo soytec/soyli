@@ -12,9 +12,12 @@ import { Rooms, roomCreate, roomKey, roomNamespace } from './rooms.ts';
 import { registerDynamicTools } from '../dynamic/server.ts';
 import type { DynamicBackends } from '../dynamic/service.ts';
 
+import { advertiseRoom, listDirectory, entryRef, directoryFamily } from './directory.ts';
+
 export function createMatchmakingServer(
   service = new Matchmaking(),
   options: {
+    provider?: string;
     boards?: Boards;
     rooms?: Rooms;
     ice?: (actor: string) => Record<string, unknown>;
@@ -122,10 +125,12 @@ export function createMatchmakingServer(
     (actor) => ({
       version: 1,
       actor,
+      ...(options.provider ? { provider: options.provider } : {}),
       ...(options.dynamic ? { dynamic: options.dynamic.health() } : {}),
       families: [
         'soy.matchmaking.v1',
         'soy.rooms.v1',
+        ...(options.provider ? [directoryFamily] : []),
         'soy.boards.v1',
         'soy.boards.v2',
         ...(options.dynamic ? ['soy.backends.v1'] : []),
@@ -189,6 +194,27 @@ export function createMatchmakingServer(
     roomKey,
     (actor, args) => rooms.leave(actor, args),
   );
+  if (options.provider) {
+    const key = options.provider;
+    tool(
+      'soy_room_advertise',
+      'Publish or withdraw an active host’s opt-in room listing. Never publishes the internal name or peers.',
+      advertiseRoom,
+      (actor, args) => rooms.advertise(actor, args),
+    );
+    tool(
+      'soy_room_directory',
+      'Read public rooms across games. Cursor is the last room ID; reading does not renew a lease or join a room.',
+      listDirectory,
+      (_, args) => rooms.directory(key, args),
+    );
+    tool(
+      'soy_room_enter',
+      'Join the exact advertised room if it still accepts players.',
+      entryRef,
+      (actor, args) => rooms.enter(actor, key, args),
+    );
+  }
   if (options.ice)
     tool(
       'soy_ice',

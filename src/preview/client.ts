@@ -1,3 +1,4 @@
+import { entryRef, joinConvention } from '#src/backend/multiplayer/directory.ts';
 import { previewIntents } from './intent-client.ts';
 import { AppearanceControl } from '#src/runtime/components/appearance-control.tsx';
 import { shellTheme } from '#src/runtime/appearance.ts';
@@ -222,6 +223,25 @@ async function refresh() {
       intent: { workspace: intents.workspace, catalogId: info.intentCatalogId },
       theme: shellTheme,
       backend: info.backend,
+      roomEntry: (() => {
+        const q = new URLSearchParams(location.search);
+        if (
+          !info.backend ||
+          !info.gameAddress ||
+          !info.intentTags.some((t) => t[0] === 'z' && t[1] === 'game') ||
+          !info.intentTags.some((t) => t[0] === 'i' && t[1] === joinConvention) ||
+          info.backend.pubkey !== q.get('provider')
+        )
+          return;
+        const ref = entryRef.safeParse({
+          version: 1,
+          provider: info.backend.pubkey,
+          room: q.get('room'),
+          protocol: q.get('protocol'),
+          napplet: info.gameAddress,
+        });
+        return ref.success ? ref.data : undefined;
+      })(),
       backendIdentity: info.backendIdentity,
       backendAliases: info.backendAliases,
       media: (session) =>

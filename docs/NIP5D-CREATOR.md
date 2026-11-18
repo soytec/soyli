@@ -17,7 +17,7 @@ does not build, sign or publish its own deployment event.
   "description": "Draw a racetrack and race your friends' creations.",
   "requires": ["storage"],
   "optionalDomains": ["theme", "identity"],
-  "archetypes": ["track", "editor"],
+  "archetypes": ["game", "track", "editor"],
   "intents": [{ "intent": "napplet:track/edit", "parameters": ["track", "mode"] }],
   "icon": { "file": "assets/track-icon.png", "mime": "image/png" }
 }
@@ -42,7 +42,7 @@ For example, this complete `metadata.json` works with `soyli project set metadat
   "topics": ["racing", "editor"],
   "requires": ["storage"],
   "optionalDomains": ["theme", "identity"],
-  "archetypes": ["track", "editor"],
+  "archetypes": ["game", "track", "editor"],
   "intents": [{ "intent": "napplet:track/edit", "parameters": ["track", "mode"] }]
 }
 ```
@@ -182,3 +182,16 @@ current `/n/` link; a superseded `/r/` revision cannot replace a newer release.
 Immutable snapshots are deliberately not converted: their new independent
 identity would not preserve the old thread/storage. Old links remain playable
 through the legacy reader without any migration.
+
+## Help people find the right kind of napplet
+
+Choose a coarse `archetypes` label for the primary experience: `game`, `utility`, or
+`digital-art`, for example. These are examples, not an exhaustive registry. Keep
+specific `topics` such as racing or generative-art (including existing game tags).
+Publishers write `z` and `t` separately. Archetypes neither grant capabilities
+nor imply that a game is online. Only declare an intent that the app handles.
+
+The [selected NIP-5D amendment](https://github.com/dskvr/nips/blob/f60550c3409d6d81a875088ec83e660571e10504/5D.md#shell-handlers)
+adds optional NIP-89 shell handler advertisements. A shell's bare `N` tags
+are hints, never grants. Napplet projects do not publish these tags. A missing
+handler advertisement must not change playback.

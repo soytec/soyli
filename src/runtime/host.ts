@@ -63,6 +63,7 @@ export type HostOptions = {
   backend?: BackendProvider;
   /** Trusted local preview's configured napplet scope; never supplied by the frame. */
   backendIdentity?: string;
+  roomEntry?: import('#src/backend/multiplayer/directory.ts').RoomEntry;
   backendAliases?: BackendProvider[];
   theme?: ThemeSource;
   /** Narrow shell shortcut; only invoked for a focused, interactive frame. */
@@ -96,6 +97,7 @@ export function attachNappletHost(options: HostOptions) {
   const intentEndpoint = options.intent?.workspace.attach(options.intent.catalogId, send);
   // The verified frame outlives account scopes. Each request captures its scope;
   // retiring it settles promises and prevents delayed results reaching a new user.
+  let firstEntry = options.roomEntry;
   const createAccount = (pubkey: string | null) => {
     let active = true;
     const requests = new Set<(error: Error) => void>();
@@ -122,6 +124,15 @@ export function attachNappletHost(options: HostOptions) {
       `${options.identity}:${pubkey ?? 'guest'}`,
       crypto.randomUUID(),
     );
+    if (firstEntry) {
+      store({
+        type: 'storage.set',
+        scope: 'instance',
+        key: 'soy.room-entry.v1',
+        value: JSON.stringify(firstEntry),
+      });
+      firstEntry = undefined;
+    }
     const choose = (
       kind: HostPrompt['kind'],
       value: string,

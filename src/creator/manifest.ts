@@ -44,12 +44,12 @@ export function adaptManifestSkill(path: string, source: string) {
     ].includes(path.split('/')[1])
   )
     source +=
-      '\n## soyLI manifest metadata\n\nBefore publication or changing capabilities/discovery, read docs/napplet-manifest.md. Save metadata in napplet.json; the publisher creates the signed event. Advertise only implemented intents and optional integrations, and verify their absent-domain fallbacks.\n';
+      '\n## soyLI manifest metadata\n\nBefore publication or changing capabilities/discovery, read docs/napplet-manifest.md. Save metadata in napplet.json; the publisher creates the signed event. Choose a coarse archetype for discovery (game for games); keep descriptive topic tags. For opt-in public rooms follow docs/napplet-backend.md, retain manual entry and never advertise private rooms or guest keys. Advertise only implemented intents and optional integrations, and verify their absent-domain fallbacks.\n';
   return source;
 }
 export function adaptManifestBoilerplate(path: string, source: string) {
   if (path === 'docs/nip-5d.md')
-    return `# NIP-5D reference\n\nSelected standalone draft: https://github.com/dskvr/nips/blob/4d0fb2e9fa1fdca71be09b17a4c5f382fbca5d51/5D.md\n\nRead docs/napplet-manifest.md for this installed soyLI's authoring and legacy-compatibility contract. The selected draft defines the manifest and sandbox; matching NAPs define domain messages. Package documentation can lag the draft. Do not copy host policy into app code or invent new message envelopes.\n`;
+    return `# NIP-5D reference\n\nSelected standalone draft: https://github.com/dskvr/nips/blob/f60550c3409d6d81a875088ec83e660571e10504/5D.md\n\nRead docs/napplet-manifest.md for this installed soyLI's authoring and legacy-compatibility contract. The selected draft defines the manifest and sandbox; matching NAPs define domain messages. Package documentation can lag the draft. Do not copy host policy into app code or invent new message envelopes.\n`;
   if (path === 'README.md') {
     source = replace(
       source,

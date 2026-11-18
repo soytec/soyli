@@ -33,6 +33,12 @@ const families: Record<string, string[]> = {
     ].map((name) => `soy_backend_${name}`),
   ],
   'soy.matchmaking.v1': ['soy_session', 'soy_match_join', 'soy_match_status', 'soy_match_leave'],
+  'soy.room-directory.v1': [
+    'soy_session',
+    'soy_room_advertise',
+    'soy_room_directory',
+    'soy_room_enter',
+  ],
   'soy.rooms.v1': [
     'soy_session',
     'soy_room_create',

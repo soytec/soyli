@@ -63,6 +63,7 @@ export type PreviewRevision = {
   uploadServers: string[];
   hostIdentity: string;
   backendIdentity?: string;
+  gameAddress?: string;
   requires: string[];
   relays: string[];
 };
@@ -117,6 +118,7 @@ export function startPreviewServer(
       hostIdentity: `local-preview:${config.previewId}:${artifactHash}`,
       ...(backend
         ? {
+            gameAddress: backend.napplet,
             backendIdentity: `${backend.pubkey}:35129:${projectIdentity(backend.project)}:${artifactHash}`,
           }
         : {}),

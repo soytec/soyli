@@ -144,6 +144,7 @@ export async function startBackend(options: {
     throw error;
   }
   const server = createMatchmakingServer(undefined, {
+    provider: pubkey,
     dynamic,
     boards,
     rooms: new Rooms(Date.now, 1000, options.maxPeers ?? 8),
@@ -175,6 +176,14 @@ export async function startBackend(options: {
       },
     })),
   }));
+  transport.addListToolsAnnouncementTagsProducer(({ tools }) =>
+    tools.length
+      ? [
+          ...tools.map((tool) => ['i', computeCommonSchemaHash(tool), tool.name]),
+          ['k', 'io.contextvm/common-schema'],
+        ]
+      : [],
+  );
   try {
     await server.connect(transport);
   } catch (error) {
