@@ -110,8 +110,22 @@ test('generated manifest guidance uses standalone authoring and preserves the pi
       /aggregate hash lands|Confirm NIP-5A|recomputes the NIP-5A|That file uses NIP-5D kinds with the NIP-5A/,
     );
   }
-  for (const name of ['napplet-make', 'napplet-sdk', 'napplet-test', 'napplet-interop'])
-    expect(files[`.agents/skills/${name}/SKILL.md`]).toContain('docs/napplet-manifest.md');
+  const fieldGuide = 'https://archetypes.napplet.run/';
+  expect(files['docs/napplet-manifest.md']).toContain(fieldGuide);
+  expect(files['docs/napplet-manifest.md']).toContain('["z", "game"]');
+  for (const agent of ['.agents', '.claude'])
+    for (const skill of [
+      'napplet-make',
+      'napplet-build',
+      'napplet-sdk',
+      'napplet-test',
+      'napplet-interop',
+    ]) {
+      const instructions = files[`${agent}/skills/${skill}/SKILL.md`];
+      expect(instructions).toContain('docs/napplet-manifest.md');
+      expect(instructions).toContain(fieldGuide);
+      expect(instructions).toContain('new names are valid');
+    }
   expect(boilerplate.files['docs/package-surfaces.md']).toContain('the NIP-5A aggregate');
 });
 

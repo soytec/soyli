@@ -44,7 +44,7 @@ export function adaptManifestSkill(path: string, source: string) {
     ].includes(path.split('/')[1])
   )
     source +=
-      '\n## soyLI manifest metadata\n\nBefore publication or changing capabilities/discovery, read docs/napplet-manifest.md. Save metadata in napplet.json; the publisher creates the signed event. Advertise only implemented intents and optional integrations, and verify their absent-domain fallbacks.\n';
+      '\n## soyLI manifest metadata\n\nBefore publication or changing capabilities/discovery, read docs/napplet-manifest.md. Save metadata in napplet.json; the publisher creates the signed event. Choose optional archetypes in napplet.json for what the napplet does (game for games). Consult https://archetypes.napplet.run/ for observed spellings; new names are valid. Keep descriptive topics separate. Advertise only implemented intents and optional integrations, and verify their absent-domain fallbacks.\n';
   return source;
 }
 export function adaptManifestBoilerplate(path: string, source: string) {

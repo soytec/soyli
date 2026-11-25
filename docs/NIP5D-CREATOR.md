@@ -50,6 +50,23 @@ For example, this complete `metadata.json` works with `soyli project set metadat
 Use the project's actual name, license and other metadata. Omitting optional
 fields preserves them; use empty lists or `"icon": null` to clear them.
 
+## Choosing archetypes for discovery
+
+When a napplet has a recognizable purpose, add its role to the optional
+`archetypes` array in `napplet.json`. For example, a racing game could use
+`"archetypes": ["game"]` and `"topics": ["racing", "arcade"]`. The publisher
+writes one `["z", "game"]` tag and separate `t` tags for those topics.
+Keep existing topic tags when adding a role. A napplet can advertise several
+roles it actually serves, or omit archetypes entirely.
+
+Consult the [archetype field guide](https://archetypes.napplet.run/) when
+choosing a name. It reports spellings observed on public relays. Reuse an
+existing spelling when it fits (for example, `text-editor`); otherwise choose
+a descriptive new name. The field guide is optional and publishing works
+without contacting it. Its suggested synonyms are not interchangeable IDs.
+Only declare an accepted intent when the app implements that action. For example,
+a `game` archetype alone promises neither multiplayer nor a join handler.
+
 ## What gets published
 
 | Authoring input                                          | Signed NIP-5D output                                                      |

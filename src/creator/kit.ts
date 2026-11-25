@@ -41,7 +41,9 @@ documented soyLI authoring adaptations. Start with napplet-make. Protocol guidan
 follows the selected upstream draft in docs/napplet-manifest.md; this note maps
 tooling commands to the installed napplet soyLI. Read that guide before editing
 capabilities, intents, archetypes or icon metadata. Fresh publications use the
-standalone NIP-5D shape; earlier signed napplets remain readable.
+standalone NIP-5D shape; earlier signed napplets remain readable. Choose an optional
+archetype for what the app does and keep its topic tags. The manifest guide links
+to observed archetype names and explains how to publish a new one.
 
 Before styling, read docs/napplet-visual-design.md. Choose a visual direction for
 the main experience AND its UI/HUD; record it in the project brief. Starter colors,

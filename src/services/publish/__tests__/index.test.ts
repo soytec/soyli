@@ -922,7 +922,8 @@ test('standalone publication retains optional domains, archetypes, intent parame
         description: 'A track editor. <b>Plain text, not HTML.</b>',
         requires: ['storage'],
         optionalDomains: ['storage', 'theme', 'future-domain'],
-        archetypes: ['track', 'editor'],
+        archetypes: ['game', 'custom-track-editor'],
+        topics: ['racing'],
         intents: [{ intent: 'napplet:track/edit', parameters }],
         icon: { file: 'icon.png', mime: 'image/png' },
       }),
@@ -933,7 +934,12 @@ test('standalone publication retains optional domains, archetypes, intent parame
     const release = await validateManifest(job.current);
     expect(release.description).toBe('A track editor. <b>Plain text, not HTML.</b>');
     expect(release.optionalDomains).toEqual(['theme', 'future-domain']);
-    expect(release.archetypes).toEqual(['track', 'editor']);
+    expect(release.archetypes).toEqual(['game', 'custom-track-editor']);
+    expect(job.current!.tags.filter(([kind]) => kind === 'z')).toEqual([
+      ['z', 'game'],
+      ['z', 'custom-track-editor'],
+    ]);
+    expect(job.current!.tags.filter(([kind]) => kind === 't')).toEqual([['t', 'racing']]);
     expect(release.intents).toEqual([{ intent: 'napplet:track/edit', parameters }]);
     expect(job.current!.tags.find((t) => t[0] === 'i')).toHaveLength(16);
     expect(release.icon).toEqual({ hash: await sha256(previewPng), mime: 'image/png' });
